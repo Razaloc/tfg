@@ -13,6 +13,11 @@ version = "0.1.0"
 # test = false
 
 [[bin]]
+name = "main"
+path = "src/bin/main.rs"
+test = false
+
+[[bin]]
 name = "bitfield"
 path = "src/bin/bitfield.rs"
 test = false
@@ -56,10 +61,11 @@ cortex-m-rt = "0.7"
 defmt = "1.0"
 defmt-rtt = "1.0"
 panic-probe = { version = "1.0", features = ["print-defmt"] }
+#panic-halt = "1.0.0"
 semihosting = "0.1.20"
 # TODO(4) enter your HAL here
 # some-hal = "1.2.3"
-stm32g4xx-hal = "0.0.0"
+stm32g4 = { version = "0.16.0", features = ["stm32g474"] }
 [dev-dependencies]
 defmt-test = "0.3"
 
