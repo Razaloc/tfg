@@ -27,18 +27,22 @@ fn main() -> ! {
         w.adc12en().set_bit();
         w
     });
-    rcc.ahb1enr().modify(|_, w| w.dma1en().set_bit());
+    rcc.ahb1enr().modify(|_, w| {
+        w.dma1en().set_bit();
+        w.dmamux1en().set_bit();
+        w
+    });
     rcc.apb1enr1().modify(|_, w| w.tim6en().set_bit());
 
-    // === 2️⃣ GPIO (PA4 DAC, PA0 ADC) ===
+    // === 2️⃣ GPIO ===
     let gpioa = dp.GPIOA;
     gpioa.moder().modify(|_, w| {
-        w.moder4().analog();
-        w.moder0().analog();
+        w.moder4().analog(); // DAC1_OUT1 (PA4)
+        w.moder0().analog(); // ADC1_IN1  (PA0)
         w
     });
 
-    // === 3️⃣ TIM6 para DAC a 10 kHz ===
+    // === 3️⃣ TIM6: 10 kHz para trigger del DAC ===
     let tim6 = dp.TIM6;
     unsafe {
         tim6.psc().write(|w| w.psc().bits(169));
@@ -47,7 +51,7 @@ fn main() -> ! {
         tim6.cr1().modify(|_, w| w.cen().set_bit());
     }
 
-    // === 4️⃣ DAC1 con trigger TIM6 ===
+    // === 4️⃣ DAC1 CH1 con trigger TIM6 ===
     let dac = dp.DAC1;
     unsafe {
         dac.dhr12r1().write(|w| w.bits(2048));
@@ -61,12 +65,13 @@ fn main() -> ! {
 
     // === 5️⃣ DMA1 CH3 → DAC (tabla seno) ===
     let dma1 = dp.DMA1;
-    let dac_dhr12 = &dac.dhr12r1() as *const _ as u32;
+    // Puntero correcto al registro del DAC para DMA
+    let dac_dhr12_addr = dac.dhr12r1().as_ptr() as u32;
 
     unsafe {
         let ch = 2; // CH3
         dma1.ch(ch).cr().modify(|_, w| w.en().clear_bit());
-        dma1.ch(ch).par().write(|w| w.pa().bits(dac_dhr12));
+        dma1.ch(ch).par().write(|w| w.pa().bits(dac_dhr12_addr));
         dma1.ch(ch).mar().write(|w| w.ma().bits(SINE_TABLE.as_ptr() as u32));
         dma1.ch(ch).ndtr().write(|w| w.ndt().bits(N_SAMPLES as u16));
 
@@ -74,82 +79,78 @@ fn main() -> ! {
             w.minc().set_bit();
             w.circ().set_bit();
             w.dir().set_bit();   // mem → periph
-            w.msize().bits(0b01);
-            w.psize().bits(0b01);
+            w.msize().bits(0b01); // 16 bits
+            w.psize().bits(0b01); // 16 bits
             w.pl().bits(0b10);
             w.en().set_bit();
             w
         });
     }
 
-    // *****************************************************************
-    // === 6️⃣ ADC1 inicialización (con BULB + SMPPLUS) ===
-    // *****************************************************************
+    // === 5.5️⃣ DMAMUX: ADC12 → DMA1_CH1 ===
+    let dmamux = dp.DMAMUX;
+    unsafe {
+        dmamux.ccr(0).modify(|_, w| {
+            w.dmareq_id().bits(5); // 5 = ADC12 (ADC1/ADC2)
+            w
+        });
+    }
 
+    // === 6️⃣ ADC1 inicialización ===
     let adc = dp.ADC1;
     let adc_common = dp.ADC12_COMMON;
 
     unsafe { adc_common.ccr().modify(|_, w| w.ckmode().bits(0b01)); }
 
-    // Apagar ADC si está activo
     if adc.cr().read().aden().bit_is_set() {
         adc.cr().modify(|_, w| w.addis().set_bit());
         while adc.cr().read().aden().bit_is_set() {}
     }
 
-    // Deep power-down off
     adc.cr().modify(|_, w| w.deeppwd().clear_bit());
-
-    // Regulador ADC on
     adc.cr().modify(|_, w| w.advregen().set_bit());
     cortex_m::asm::delay(30_000);
 
-    // Calibración
     adc.cr().modify(|_, w| w.adcal().set_bit());
     while adc.cr().read().adcal().bit_is_set() {}
     cortex_m::asm::delay(20_000);
 
-    // === Canal y sampling ===
+    // Canal + muestreo
     adc.sqr1().modify(|_, w| unsafe {
         w.l().bits(0);
-        w.sq1().bits(1) // ADC1_IN1 = PA0
+        w.sq1().bits(1) // canal 1 = PA0
     });
-
     unsafe {
         adc.smpr1().modify(|_, w| {
-            w.smp1().bits(0b010);
-            w.smpplus().set_bit();  // <--- Stability fix #1
+            w.smp1().bits(0b010); // sampling time moderado
             w
         });
     }
 
-    // === BULB sampling mode (errata workaround) ===
-    adc.cfgr2().modify(|_, w| w.bulb().set_bit()); // <--- Stability fix #2
-
-    // === CFGR antes de ADEN ===
+    // Modo continuo + DMA
     adc.cfgr().modify(|_, w| {
-        w.cont().set_bit();       // modo continuo
-        w.exten().disabled();     // sin trigger
-        w.dmaen().set_bit();      // DMA enable
-        w.dmacfg().set_bit();     // circular
+        w.cont().set_bit();
+        w.exten().disabled();
+        w.dmaen().set_bit();
+        w.dmacfg().set_bit();
         w
     });
 
-    // Habilitar ADC
     adc.isr().write(|w| w.adrdy().clear());
     adc.cr().modify(|_, w| w.aden().set_bit());
     while adc.isr().read().adrdy().bit_is_clear() {}
 
     defmt::println!("¡ADC y DAC configurados!");
 
-    // === 7️⃣ DMA1 CH1 → ADC_DR ===
+    // === 7️⃣ DMA1 CH1 → ADC_DR (periph→mem) ===
     let adc_buffer = singleton!(: [u16; N_SAMPLES] = [0; N_SAMPLES]).unwrap();
-    let adc_dr = &adc.dr() as *const _ as u32;
+    // Puntero correcto al registro DR para DMA
+    let adc_dr_addr = adc.dr().as_ptr() as u32;
 
     unsafe {
-        let ch = 0;
+        let ch = 0; // CH1
         dma1.ch(ch).cr().modify(|_, w| w.en().clear_bit());
-        dma1.ch(ch).par().write(|w| w.pa().bits(adc_dr));
+        dma1.ch(ch).par().write(|w| w.pa().bits(adc_dr_addr));
         dma1.ch(ch).mar().write(|w| w.ma().bits(adc_buffer.as_ptr() as u32));
         dma1.ch(ch).ndtr().write(|w| w.ndt().bits(N_SAMPLES as u16));
 
@@ -157,21 +158,24 @@ fn main() -> ! {
             w.minc().set_bit();
             w.circ().set_bit();
             w.dir().clear_bit();   // periph → mem
-            w.msize().bits(0b01);
-            w.psize().bits(0b01);
+            w.msize().bits(0b01);  // 16 bits en memoria
+            w.psize().bits(0b01);  // 16 bits en periférico (ADC_DR parte baja)
             w.pl().bits(0b10);
             w.en().set_bit();
             w
         });
     }
 
-    // Start ADC conversions
+    // Arrancar conversiones
     adc.cr().modify(|_, w| w.adstart().set_bit());
     defmt::println!("¡ADC en marcha!");
 
-    // === 8️⃣ Loop ===
+    // === 8️⃣ Bucle principal ===
     loop {
         cortex_m::asm::delay(1_000_000);
+
+        let direct = adc.dr().read().rdata().bits();
+        defmt::println!("ADC_DR DIRECT = {}", direct);
 
         let adc_slice =
             unsafe { core::slice::from_raw_parts(adc_buffer.as_ptr(), N_SAMPLES) };
