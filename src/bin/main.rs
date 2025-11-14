@@ -80,7 +80,7 @@ fn main() -> ! {
             w.circ().set_bit();
             w.dir().set_bit();   // mem → periph
             w.msize().bits(0b01); // 16 bits
-            w.psize().bits(0b01); // 16 bits
+            w.psize().bits(0b10); // 32 bits
             w.pl().bits(0b10);
             w.en().set_bit();
             w
@@ -159,7 +159,7 @@ fn main() -> ! {
             w.circ().set_bit();
             w.dir().clear_bit();   // periph → mem
             w.msize().bits(0b01);  // 16 bits en memoria
-            w.psize().bits(0b01);  // 16 bits en periférico (ADC_DR parte baja)
+            w.psize().bits(0b10);  // 32 bits en periférico (ADC_DR parte baja)
             w.pl().bits(0b10);
             w.en().set_bit();
             w
