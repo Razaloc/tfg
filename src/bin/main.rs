@@ -155,9 +155,6 @@ fn main() -> ! {
 
     adc.isr().write(|w| w.adrdy().clear());
     adc.cr().modify(|_, w| w.aden().set_bit());
-    //while adc.isr().read().adrdy().bit_is_clear() {}
-
-    //defmt::println!("¡ADC y DAC configurados!");
 
     // === 7️⃣ DMA1 CH1 → ADC_DR (periph→mem) ===
     let adc_buffer = singleton!(: [u16; N_SAMPLES] = [0; N_SAMPLES]).unwrap();
@@ -191,14 +188,10 @@ fn main() -> ! {
     loop {
         cortex_m::asm::delay(1_000_000);
 
-        //let direct = adc.dr().read().rdata().bits();
-        //defmt::println!("ADC_DR DIRECT = {}", direct);
         let adc_slice =
             unsafe { core::slice::from_raw_parts(adc_buffer.as_ptr(), N_SAMPLES) };
 
         defmt::println!("ADC buffer completo: {:?}", adc_slice);
-        //let adc_slice =
-        //    unsafe { core::slice::from_raw_parts(adc_buffer.as_ptr(), N_SAMPLES) };
 
         // Promedio ADC sin overflow
         let sum_adc: u32 = adc_slice.iter().map(|&x| x as u32).sum();
@@ -206,10 +199,6 @@ fn main() -> ! {
 
         // Promedio DAC fijo (tabla conocida)
         let avg_dac: u16 = 2048; // o  (SINE_TABLE.iter().map(|&x| x as u32).sum::<u32>() / N_SAMPLES as u32) as u16
-
-
-        //defmt::println!("ADC primeros valores: {:?}", &adc_slice[..8]);
-        //defmt::println!("Promedios: ADC={}, DAC={}", avg_adc, avg_dac);
 
         if (avg_adc as i32 - avg_dac as i32).abs() > 50 {
             defmt::warn!("Desviación alta: ADC={}, DAC={}", avg_adc, avg_dac);
