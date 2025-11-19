@@ -1,233 +1,153 @@
-# `app-template`
+# Generación y Adquisición de Señal Senoidal en STM32G474RE
 
-> Quickly set up a [`probe-rs`] + [`defmt`] + [`flip-link`] embedded project
+Este proyecto implementa un sistema embebido en **Rust** para un microcontrolador **STM32G474RE** capaz de:
 
-[`probe-rs`]: https://crates.io/crates/probe-rs
-[`defmt`]: https://github.com/knurling-rs/defmt
-[`flip-link`]: https://github.com/knurling-rs/flip-link
+* Generar una **onda senoidal** mediante el **DAC1**.
+* Enviarla de forma estable usando **DMA en modo circular**.
+* Disparar el sistema mediante un **timer (TIM6)**.
+* Leer la señal resultante tras atravesar un medio (por ejemplo, **tejido biológico**) usando **ADC1 + DMA**.
+* Procesar las muestras en tiempo real.
 
-## Dependencies
+El objetivo final es emplear esta plataforma como base para **adquisición biomédica** en experimentos de propagación de señales a través de tejidos, con aplicaciones potenciales en monitorización, espectroscopía eléctrica y análisis de impedancia.
 
-### 1. `flip-link`:
+---
 
-```bash
-cargo install flip-link
+## ✨ Características principales
+
+* **No-Std + Runtime minimal** (`no_std`, `no_main`).
+* **Rust embedded** usando:
+
+  * `cortex-m`
+  * `cortex-m-rt`
+  * `stm32g4`
+  * `defmt`
+  * `panic-probe`
+* **DAC → DMA (CH3)** para reproducir una tabla senoidal de 32 muestras.
+* **TIM6** genera el *trigger* a 10 kHz para el DAC y ADC.
+* **ADC1** configurado con:
+
+  * Calibración interna
+  * Muestreo canal PA0 (ADC1_IN1)
+  * Conversión externa ligada a TIM6
+  * DMA (CH1) en modo circular
+* **DMAMUX** correctamente configurado para enlazar DAC1 y ADC1 con DMA.
+* **Procesamiento básico**: cálculo de promedio, comparación con la referencia DAC.
+
+---
+
+## 🧠 Arquitectura del sistema
+
+```text
+     ┌───────────┐     DMA CH3 (tabla seno)
+     │  SINE      │==============================┐
+     │  TABLE     │                              │
+     └───────────┘                              ▼
+                                            ┌────────┐
+                                            │  DAC1  │─── Señal → Tejido → Sensor
+                                            └────────┘
+                                                 ▲
+                        TIM6_TRGO (10 kHz)       │
+                                                 │
+                                           ┌────────┐
+                                           │ TIM6   │
+                                           └────────┘
+                                                 │
+                                                 ▼
+                                            ┌────────┐
+                                            │ ADC1   │─── DMA CH1 → Buffer ADC
+                                            └────────┘
 ```
 
-### 2. `probe-rs`:
+---
 
-Install probe-rs by following the instructions at <https://probe.rs/docs/getting-started/installation/>.
+## ⚙️ Flujo de inicialización
 
-### 3. [`cargo-generate`]:
+1. **RCC** habilita relojes de GPIO, DAC, ADC, DMA y TIM6.
+2. **GPIOA** se configura en modo analógico:
 
-```bash
-cargo install cargo-generate
+   * PA4 → DAC1_OUT1
+   * PA0 → ADC1_IN1
+3. **TIM6** se configura para generar un *trigger* a **10 kHz**.
+4. **DAC1 + DMA** cargan repetidamente la tabla senoidal.
+5. **DMAMUX** enlaza correctamente DAC1_CH1 y ADC1.
+6. **ADC1** se calibra, configura y se activa en modo con *external trigger*.
+7. **DMA1 CH1** almacena en un buffer de 32 muestras.
+8. Bucle principal imprime las muestras y compara desviaciones.
+
+---
+
+## 📡 Tabla senoidal (32 muestras)
+
+Se utiliza una tabla precomputada de 12 bits centrada en 2048.
+
+```rust
+const SINE_TABLE: [u16; 32] = [...];
 ```
 
-[`cargo-generate`]: https://crates.io/crates/cargo-generate
+Esto permite generar una señal periódica estable usando el DAC + DMA.
 
-> *Note:* You can also just clone this repository instead of using `cargo-generate`, but this involves additional manual adjustments.
+---
 
-## Setup
+## 🧪 Uso previsto
 
-### 1. Initialize the project template
+Este firmware está diseñado para:
 
-```bash
-cargo generate \
-    --git https://github.com/knurling-rs/app-template \
-    --branch main \
-    --name my-app
-```
+* Experimentos de propagación en tejido
+* Estudios de impedancia eléctrica
+* Sensado biomédico experimental
+* Prototipos de instrumentación en Rust
 
-If you look into your new `my-app` folder, you'll find that there are a few `TODO`s in the files marking the properties you need to set.
+Puedes conectar:
 
-Let's walk through them together now.
+* **PA4** → a un transductor, electrodo o actuador
+* **PA0** → al punto donde se desea leer la señal atenuada/filtrada por el tejido
 
-### 2. Set `probe-rs` chip
+---
 
-Pick a chip from ` probe-rs chip list` and enter it into `.cargo/config.toml`.
+## 🧰 Requisitos
 
-If, for example, you have a nRF52840 Development Kit as used in one of [our exercises], replace `{{chip}}` with `nRF52840_xxAA`.
+* Placa **STM32G474RE Nucleo** o compatible
+* Toolchain Rust para embedded (`thumbv7em-none-eabihf`)
+* `probe-rs` para flasheo y *debug*
 
-[our workshops]: https://rust-exercises.ferrous-systems.com
-
-```diff
- # .cargo/config.toml
--runner = ["probe-rs", "run", "--chip", "$CHIP", "--log-format=oneline"]
-+runner = ["probe-rs", "run", "--chip", "nRF52840_xxAA", "--log-format=oneline"]
-```
-
-### 3. Adjust the compilation target
-
-In `.cargo/config.toml`, pick the right compilation target for your board.
-
-```diff
- # .cargo/config.toml
- [build]
--target = "thumbv6m-none-eabi"    # Cortex-M0 and Cortex-M0+
--# target = "thumbv7m-none-eabi"    # Cortex-M3
--# target = "thumbv7em-none-eabi"   # Cortex-M4 and Cortex-M7 (no FPU)
--# target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
-+target = "thumbv7em-none-eabihf" # Cortex-M4F (with FPU)
-```
-
-Add the target with `rustup`.
+Instalación rápida:
 
 ```bash
 rustup target add thumbv7em-none-eabihf
+cargo install probe-rs --locked
 ```
 
-### 4. Add a HAL as a dependency
+---
 
-In `Cargo.toml`, list the Hardware Abstraction Layer (HAL) for your board as a dependency.
+## ▶️ Compilar y cargar
 
-For the nRF52840 you'll want to use the [`nrf52840-hal`].
-
-[`nrf52840-hal`]: https://crates.io/crates/nrf52840-hal
-
-```diff
- # Cargo.toml
- [dependencies]
--# some-hal = "1.2.3"
-+nrf52840-hal = "0.14.0"
+```bash
+cargo build --release
+probe-rs run --chip STM32G474RETx target/thumbv7em-none-eabihf/release/firmware
 ```
 
-⚠️ Note for RP2040 users ⚠️
+Para logs con `defmt`:
 
-You will need to not just specify the `rp-hal` HAL, but a BSP (board support crate) which includes a second stage bootloader. Please find a list of available BSPs [here](https://github.com/rp-rs/rp-hal-boards#packages).
-
-### 5. Import your HAL
-
-Now that you have selected a HAL, fix the HAL import in `src/lib.rs`
-
-```diff
- // my-app/src/lib.rs
--// use some_hal as _; // memory layout
-+use nrf52840_hal as _; // memory layout
+```bash
+probe-rs attach --defmt
 ```
 
-### (6. Get a linker script)
+---
 
-Some HAL crates require that you manually copy over a file called `memory.x` from the HAL to the root of your project. For nrf52840-hal, this is done automatically so no action is needed. For other HAL crates, see their documentation on where to find an example file.
+## 🔍 Trabajo futuro
 
-The `memory.x` file should look something like:
+* Filtrado digital (FIR/IIR) en el microcontrolador
+* FFT o análisis espectral en tiempo real
+* Modulación de frecuencia o amplitud
+* Interfaz USB para streaming de datos
+* Integración con sensores biomédicos reales
 
-```text
-MEMORY
-{
-  FLASH : ORIGIN = 0x00000000, LENGTH = 1024K
-  RAM   : ORIGIN = 0x20000000, LENGTH = 256K
-}
-```
+---
 
-The `memory.x` file is included in the `cortex-m-rt` linker script `link.x`, and so `link.x` is the one you should tell `rustc` to use (see the `.cargo/config.toml` file where we do that).
+## 📄 Licencia
 
-### 7. Run!
+MIT — libre uso para proyectos educativos, biomédicos o experimentales.
 
-You are now all set to `cargo-run` your first `defmt`-powered application!
-There are some examples in the `src/bin` directory.
+---
 
-Start by `cargo run`-ning `my-app/src/bin/hello.rs`:
-
-```console
-$ # `rb` is an alias for `run --bin`
-$ cargo rb hello
-    Finished `dev` profile [optimized + debuginfo] target(s) in 0.01s
-     Running `probe-rs run --chip nrf52840_xxaa --log-format=oneline target/thumbv6m-none-eabi/debug/hello`
-      Erasing ✔ 100% [####################]   8.00 KiB @  15.79 KiB/s (took 1s)
-  Programming ✔ 100% [####################]   8.00 KiB @  13.19 KiB/s (took 1s)                                                                                                                        Finished in 1.11s
-Hello, world!
-
-$ echo $?
-0
-```
-
-If you're running out of memory (`flip-link` bails with an overflow error), you can decrease the size of the device memory buffer by setting the `DEFMT_RTT_BUFFER_SIZE` environment variable. The default value is 1024 bytes, and powers of two should be used for optimal performance:
-
-```console
-$ DEFMT_RTT_BUFFER_SIZE=64 cargo rb hello
-```
-
-### (8. Set `rust-analyzer.linkedProjects`)
-
-If you are using [rust-analyzer] with VS Code for IDE-like features you can add following configuration to your `.vscode/settings.json` to make it work transparently across workspaces. Find the details of this option in the [RA docs].
-
-```json
-{
-    "rust-analyzer.linkedProjects": [
-        "Cargo.toml",
-        "firmware/Cargo.toml",
-    ]
-}
-```
-
-[RA docs]: https://rust-analyzer.github.io/manual.html#configuration
-[rust-analyzer]: https://rust-analyzer.github.io/
-
-## Running tests
-
-The template comes configured for running unit tests and integration tests on the target.
-
-Unit tests reside in the library crate and can test private API; the initial set of unit tests are in `src/lib.rs`.
-`cargo test --lib` will run those unit tests.
-
-```console
-$ cargo test --lib
-   Compiling example v0.1.0 (./knurling-rs/example)
-    Finished `test` profile [optimized + debuginfo] target(s) in 0.15s
-     Running unittests src/lib.rs (target/thumbv6m-none-eabi/debug/deps/example-2b0d0e25d141bf57)
-      Erasing ✔ 100% [####################]   8.00 KiB @  15.99 KiB/s (took 1s)
-  Programming ✔ 100% [####################]   8.00 KiB @  13.33 KiB/s (took 1s)                                                                                                                        Finished in 1.10s
-(1/1) running `it_works`...
-all tests passed!
-```
-
-Integration tests reside in the `tests` directory; the initial set of integration tests are in `tests/integration.rs`.
-`cargo test --test integration` will run those integration tests.
-Note that the argument of the `--test` flag must match the name of the test file in the `tests` directory.
-
-```console
-$ cargo test --test integration
-   Compiling example v0.1.0 (./knurling-rs/example)
-    Finished `test` profile [optimized + debuginfo] target(s) in 0.10s
-     Running tests/integration.rs (target/thumbv6m-none-eabi/debug/deps/integration-aaaff41151f6a722)
-      Erasing ✔ 100% [####################]   8.00 KiB @  16.03 KiB/s (took 0s)
-  Programming ✔ 100% [####################]   8.00 KiB @  13.19 KiB/s (took 1s)                                                                                                                        Finished in 1.11s
-(1/1) running `it_works`...
-all tests passed!
-```
-
-Note that to add a new test file to the `tests` directory you also need to add a new `[[test]]` section to `Cargo.toml`.
-
-To run all the tests via `cargo test` the tests need to be explicitly disabled for all the existing binary targets.
-See `Cargo.toml` for details on how to do this.
-
-## Support
-
-`app-template` is part of the [Knurling] project, [Ferrous Systems]' effort at
-improving tooling used to develop for embedded systems.
-
-If you think that our work is useful, consider sponsoring it via [GitHub
-Sponsors].
-
-## License
-
-Licensed under either of
-
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
-  http://www.apache.org/licenses/LICENSE-2.0)
-
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
-
-at your option.
-
-### Contribution
-
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
-licensed as above, without any additional terms or conditions.
-
-[Knurling]: https://knurling.ferrous-systems.com
-[Ferrous Systems]: https://ferrous-systems.com/
-[GitHub Sponsors]: https://github.com/sponsors/knurling-rs
-# tfg
+Si deseas ampliar el README con gráficos, diagramas fancier, instrucciones para hardware o documentación interna del código, puedo generarlos.
