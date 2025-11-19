@@ -32,7 +32,12 @@ fn main() -> ! {
         w.dmamux1en().set_bit();
         w
     });
-    rcc.apb1enr1().modify(|_, w| w.tim6en().set_bit());
+    rcc.ahb2enr().modify(|_, w| {
+        w.dac1en().set_bit();    // habilita DAC1/DAC2
+        w.gpioaen().set_bit();
+        w.adc12en().set_bit();
+        w
+    });
 
     // === 2️⃣ GPIO ===
     let gpioa = dp.GPIOA;
@@ -58,7 +63,8 @@ fn main() -> ! {
         dac.cr().modify(|_, w| {
             w.en1().set_bit();
             w.ten1().set_bit();
-            w.tsel1().bits(0b001); // TIM6_TRGO
+            w.dmaen1().set_bit(); 
+            w.tsel1().bits(0b000); // TIM6_TRGO
             w
         });
     }
@@ -90,11 +96,19 @@ fn main() -> ! {
     // === 5.5️⃣ DMAMUX: ADC12 → DMA1_CH1 ===
     let dmamux = dp.DMAMUX;
     unsafe {
+        // ya tienes:
         dmamux.ccr(0).modify(|_, w| {
-            w.dmareq_id().bits(5); // 5 = ADC12 (ADC1/ADC2)
+            w.dmareq_id().bits(5); // ADC1/2 → DMA1_CH1
+            w
+        });
+
+        // NUEVO: DAC1_CH1 → DMA1_CH3 (canal 2 del DMA)
+        dmamux.ccr(2).modify(|_, w| {
+            w.dmareq_id().bits(6); // 6 = DAC1_CH1
             w
         });
     }
+
 
     // === 6️⃣ ADC1 inicialización ===
     let adc = dp.ADC1;
