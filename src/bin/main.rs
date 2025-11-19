@@ -22,11 +22,6 @@ fn main() -> ! {
 
     // === 1️⃣ Relojes ===
     let rcc = dp.RCC;
-    rcc.ahb2enr().modify(|_, w| {
-        w.gpioaen().set_bit();
-        w.adc12en().set_bit();
-        w
-    });
     rcc.ahb1enr().modify(|_, w| {
         w.dma1en().set_bit();
         w.dmamux1en().set_bit();
@@ -36,6 +31,11 @@ fn main() -> ! {
         w.dac1en().set_bit();    // habilita DAC1/DAC2
         w.gpioaen().set_bit();
         w.adc12en().set_bit();
+        w
+    });
+
+    rcc.apb1enr1().modify(|_, w| {
+        w.tim6en().set_bit();   // habilita TIM6 en APB1
         w
     });
 
@@ -53,6 +53,7 @@ fn main() -> ! {
         tim6.psc().write(|w| w.psc().bits(169));
         tim6.arr().write(|w| w.arr().bits(100));
         tim6.cr2().modify(|_, w| w.mms().bits(0b010)); // TRGO = update
+        tim6.dier().modify(|_, w| w.ude().set_bit());
         tim6.cr1().modify(|_, w| w.cen().set_bit());
     }
 
@@ -64,7 +65,7 @@ fn main() -> ! {
             w.en1().set_bit();
             w.ten1().set_bit();
             w.dmaen1().set_bit(); 
-            w.tsel1().bits(0b000); // TIM6_TRGO
+            w.tsel1().tim6trgo(); // TIM6_TRGO
             w
         });
     }
@@ -86,7 +87,7 @@ fn main() -> ! {
             w.circ().set_bit();
             w.dir().set_bit();   // mem → periph
             w.msize().bits(0b01); // 16 bits
-            w.psize().bits(0b10); // 32 bits
+            w.psize().bits(0b10);
             w.pl().bits(0b10);
             w.en().set_bit();
             w
@@ -143,18 +144,20 @@ fn main() -> ! {
 
     // Modo continuo + DMA
     adc.cfgr().modify(|_, w| {
-        w.cont().set_bit();
-        w.exten().disabled();
+        w.cont().clear_bit();      // sin modo continuo
         w.dmaen().set_bit();
         w.dmacfg().set_bit();
+        w.extsel().tim6_trgo();
+        w.exten().rising_edge();   // trigger en flanco de subida
         w
     });
 
+
     adc.isr().write(|w| w.adrdy().clear());
     adc.cr().modify(|_, w| w.aden().set_bit());
-    while adc.isr().read().adrdy().bit_is_clear() {}
+    //while adc.isr().read().adrdy().bit_is_clear() {}
 
-    defmt::println!("¡ADC y DAC configurados!");
+    //defmt::println!("¡ADC y DAC configurados!");
 
     // === 7️⃣ DMA1 CH1 → ADC_DR (periph→mem) ===
     let adc_buffer = singleton!(: [u16; N_SAMPLES] = [0; N_SAMPLES]).unwrap();
@@ -173,7 +176,7 @@ fn main() -> ! {
             w.circ().set_bit();
             w.dir().clear_bit();   // periph → mem
             w.msize().bits(0b01);  // 16 bits en memoria
-            w.psize().bits(0b10);  // 32 bits en periférico (ADC_DR parte baja)
+            w.psize().bits(0b10);  
             w.pl().bits(0b10);
             w.en().set_bit();
             w
@@ -188,17 +191,25 @@ fn main() -> ! {
     loop {
         cortex_m::asm::delay(1_000_000);
 
-        let direct = adc.dr().read().rdata().bits();
-        defmt::println!("ADC_DR DIRECT = {}", direct);
-
+        //let direct = adc.dr().read().rdata().bits();
+        //defmt::println!("ADC_DR DIRECT = {}", direct);
         let adc_slice =
             unsafe { core::slice::from_raw_parts(adc_buffer.as_ptr(), N_SAMPLES) };
 
-        let avg_adc: u16 = adc_slice.iter().copied().sum::<u16>() / N_SAMPLES as u16;
-        let avg_dac: u16 = SINE_TABLE.iter().copied().sum::<u16>() / N_SAMPLES as u16;
+        defmt::println!("ADC buffer completo: {:?}", adc_slice);
+        //let adc_slice =
+        //    unsafe { core::slice::from_raw_parts(adc_buffer.as_ptr(), N_SAMPLES) };
 
-        defmt::println!("ADC primeros valores: {:?}", &adc_slice[..8]);
-        defmt::println!("Promedios: ADC={}, DAC={}", avg_adc, avg_dac);
+        // Promedio ADC sin overflow
+        let sum_adc: u32 = adc_slice.iter().map(|&x| x as u32).sum();
+        let avg_adc: u16 = (sum_adc / N_SAMPLES as u32) as u16;
+
+        // Promedio DAC fijo (tabla conocida)
+        let avg_dac: u16 = 2048; // o  (SINE_TABLE.iter().map(|&x| x as u32).sum::<u32>() / N_SAMPLES as u32) as u16
+
+
+        //defmt::println!("ADC primeros valores: {:?}", &adc_slice[..8]);
+        //defmt::println!("Promedios: ADC={}, DAC={}", avg_adc, avg_dac);
 
         if (avg_adc as i32 - avg_dac as i32).abs() > 50 {
             defmt::warn!("Desviación alta: ADC={}, DAC={}", avg_adc, avg_dac);
