@@ -2,25 +2,70 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use stm32g4::stm32g474;
+use stm32g4::stm32g474::{self, gpioc::{self}};
 use panic_probe as _;
 use defmt_rtt as _;
 use cortex_m::singleton;
 
-const N_SAMPLES: usize = 32;
-const SINE_TABLE: [u16; N_SAMPLES] = [
+const N_MUESTRAS: usize = 32;
+const TABLA_SENO: [u16; N_MUESTRAS] = [
     2048, 2447, 2831, 3185, 3495, 3750, 3939, 4056,
     4095, 4056, 3939, 3750, 3495, 3185, 2831, 2447,
     2048, 1649, 1265, 911, 601, 346, 157, 40,
     0, 40, 157, 346, 601, 911, 1265, 1649,
 ];
+const PERFILES: [Perfil; 7] = [
+    Perfil{hz: 5, psc: 169, arr: 6249},
+    Perfil{hz: 50, psc: 169, arr: 624},
+    Perfil{hz: 100, psc: 169, arr: 312},
+    Perfil{hz: 250, psc: 169, arr: 124},
+    Perfil{hz: 500, psc: 169, arr: 62},
+    Perfil{hz: 1000, psc: 169, arr: 30},
+    Perfil{hz: 3000, psc: 169, arr: 9},
+    
+];
+struct Perfil {
+    hz: u32,
+    psc: u16,
+    arr: u32,
+}
+
+fn cambia_frecuencia(tim6: &stm32g474::TIM6, perfil: &Perfil) {
+    unsafe {
+    // Para timer
+    tim6.cr1().modify(|_, w| w.cen().clear_bit());
+    // Configura
+    tim6.psc().write(|w| w.psc().bits(perfil.psc));
+    tim6.arr().write(|w| w.arr().bits(perfil.arr));
+    // reinicia
+    tim6.cnt().write(|w| w.cnt().bits(0));
+    // refresca
+    tim6.egr().write(|w| w.ug().set_bit());
+    //TRGO=update
+    tim6.cr2().modify(|_, w| w.mms().bits(0b010)); // TRGO = update
+    // arranca
+    tim6.cr1().modify(|_, w| w.cen().set_bit());
+    }
+    /* 
+    defmt::println!(
+        "TIM6 aplicado: PSC={}, ARR={}, CNT={}",
+        tim6.psc().read().psc().bits(),
+        tim6.arr().read().arr().bits(),
+        tim6.cnt().read().cnt().bits()
+    );
+    */
+}
 
 #[entry]
 fn main() -> ! {
     defmt::println!("Iniciando STM32G474...");
     let dp = stm32g474::Peripherals::take().unwrap();
 
-    // === 1️⃣ Relojes ===
+    let mut indice_frecuencia = 2; // indice para la tabla de frecuencias iniciado
+
+
+
+    //  Reloj
     let rcc = dp.RCC;
     rcc.ahb1enr().modify(|_, w| {
         w.dma1en().set_bit();
@@ -39,7 +84,7 @@ fn main() -> ! {
         w
     });
 
-    // === 2️⃣ GPIO ===
+    // GPIO
     let gpioa = dp.GPIOA;
     gpioa.moder().modify(|_, w| {
         w.moder4().analog(); // DAC1_OUT1 (PA4)
@@ -47,7 +92,7 @@ fn main() -> ! {
         w
     });
 
-    // === 3️⃣ TIM6: 10 kHz para trigger del DAC ===
+    // TIM6: 10 kHz para trigger del DAC
     let tim6 = dp.TIM6;
     unsafe {
         tim6.psc().write(|w| w.psc().bits(169));
@@ -57,7 +102,7 @@ fn main() -> ! {
         tim6.cr1().modify(|_, w| w.cen().set_bit());
     }
 
-    // === 4️⃣ DAC1 CH1 con trigger TIM6 ===
+    // DAC1 CH1 con trigger TIM6
     let dac = dp.DAC1;
     unsafe {
         dac.dhr12r1().write(|w| w.bits(2048));
@@ -70,7 +115,7 @@ fn main() -> ! {
         });
     }
 
-    // === 5️⃣ DMA1 CH3 → DAC (tabla seno) ===
+    // DMA1 CH3 → DAC (tabla seno)
     let dma1 = dp.DMA1;
     // Puntero correcto al registro del DAC para DMA
     let dac_dhr12_addr = dac.dhr12r1().as_ptr() as u32;
@@ -79,8 +124,8 @@ fn main() -> ! {
         let ch = 2; // CH3
         dma1.ch(ch).cr().modify(|_, w| w.en().clear_bit());
         dma1.ch(ch).par().write(|w| w.pa().bits(dac_dhr12_addr));
-        dma1.ch(ch).mar().write(|w| w.ma().bits(SINE_TABLE.as_ptr() as u32));
-        dma1.ch(ch).ndtr().write(|w| w.ndt().bits(N_SAMPLES as u16));
+        dma1.ch(ch).mar().write(|w| w.ma().bits(TABLA_SENO.as_ptr() as u32));
+        dma1.ch(ch).ndtr().write(|w| w.ndt().bits(N_MUESTRAS as u16));
 
         dma1.ch(ch).cr().modify(|_, w| {
             w.minc().set_bit();
@@ -94,7 +139,7 @@ fn main() -> ! {
         });
     }
 
-    // === 5.5️⃣ DMAMUX: ADC12 → DMA1_CH1 ===
+    // DMAMUX: ADC12 → DMA1_CH1
     let dmamux = dp.DMAMUX;
     unsafe {
         // ya tienes:
@@ -111,7 +156,7 @@ fn main() -> ! {
     }
 
 
-    // === 6️⃣ ADC1 inicialización ===
+    // ADC1 inicialización
     let adc = dp.ADC1;
     let adc_common = dp.ADC12_COMMON;
 
@@ -156,8 +201,8 @@ fn main() -> ! {
     adc.isr().write(|w| w.adrdy().clear());
     adc.cr().modify(|_, w| w.aden().set_bit());
 
-    // === 7️⃣ DMA1 CH1 → ADC_DR (periph→mem) ===
-    let adc_buffer = singleton!(: [u16; N_SAMPLES] = [0; N_SAMPLES]).unwrap();
+    // DMA1 CH1 → ADC_DR (periph→mem)
+    let adc_buffer = singleton!(: [u16; N_MUESTRAS] = [0; N_MUESTRAS]).unwrap();
     // Puntero correcto al registro DR para DMA
     let adc_dr_addr = adc.dr().as_ptr() as u32;
 
@@ -166,7 +211,7 @@ fn main() -> ! {
         dma1.ch(ch).cr().modify(|_, w| w.en().clear_bit());
         dma1.ch(ch).par().write(|w| w.pa().bits(adc_dr_addr));
         dma1.ch(ch).mar().write(|w| w.ma().bits(adc_buffer.as_ptr() as u32));
-        dma1.ch(ch).ndtr().write(|w| w.ndt().bits(N_SAMPLES as u16));
+        dma1.ch(ch).ndtr().write(|w| w.ndt().bits(N_MUESTRAS as u16));
 
         dma1.ch(ch).cr().modify(|_, w| {
             w.minc().set_bit();
@@ -180,29 +225,39 @@ fn main() -> ! {
         });
     }
 
+    // Botones
+    rcc.ahb2enr().modify(|_, w| {
+        w.gpiocen().set_bit();
+        w
+    });
+
+    let gpioc: stm32g4::Periph<gpioc::RegisterBlock, 1207961600> = dp.GPIOC;
+
+    gpioc.moder().modify(|_, w| {
+        w.moder13().input();
+        w
+    });
+
     // Arrancar conversiones
     adc.cr().modify(|_, w| w.adstart().set_bit());
     defmt::println!("¡ADC en marcha!");
 
-    // === 8️⃣ Bucle principal ===
+    // Bucle principal
     loop {
         cortex_m::asm::delay(1_000_000);
 
-        let adc_slice =
-            unsafe { core::slice::from_raw_parts(adc_buffer.as_ptr(), N_SAMPLES) };
+        let boton = gpioc.idr().read().idr13().bit_is_set();
 
-        defmt::println!("ADC buffer completo: {:?}", adc_slice);
-
-        // Promedio ADC sin overflow
-        let sum_adc: u32 = adc_slice.iter().map(|&x| x as u32).sum();
-        let avg_adc: u16 = (sum_adc / N_SAMPLES as u32) as u16;
-
-        // Promedio DAC fijo (tabla conocida)
-        let avg_dac: u16 = 2048; // o  (SINE_TABLE.iter().map(|&x| x as u32).sum::<u32>() / N_SAMPLES as u32) as u16
-
-        if (avg_adc as i32 - avg_dac as i32).abs() > 50 {
-            defmt::warn!("Desviación alta: ADC={}, DAC={}", avg_adc, avg_dac);
+        if boton {
+            indice_frecuencia = (indice_frecuencia +1) % PERFILES.len();
+            
+            cambia_frecuencia(&tim6, &PERFILES[indice_frecuencia]);
         }
+
+
+        let lectura_adc =
+            unsafe { core::slice::from_raw_parts(adc_buffer.as_ptr(), N_MUESTRAS) };
+        defmt::println!("Frecuencia {:?}Hz: {:?}", PERFILES[indice_frecuencia].hz, lectura_adc);        
     }
 }
 
