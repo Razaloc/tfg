@@ -63,8 +63,6 @@ fn main() -> ! {
 
     let mut indice_frecuencia = 2; // indice para la tabla de frecuencias iniciado
 
-
-
     //  Reloj
     let rcc = dp.RCC;
     rcc.ahb1enr().modify(|_, w| {
@@ -155,7 +153,6 @@ fn main() -> ! {
         });
     }
 
-
     // ADC1 inicialización
     let adc = dp.ADC1;
     let adc_common = dp.ADC12_COMMON;
@@ -196,7 +193,6 @@ fn main() -> ! {
         w.exten().rising_edge();   // trigger en flanco de subida
         w
     });
-
 
     adc.isr().write(|w| w.adrdy().clear());
     adc.cr().modify(|_, w| w.aden().set_bit());
@@ -253,7 +249,6 @@ fn main() -> ! {
             
             cambia_frecuencia(&tim6, &PERFILES[indice_frecuencia]);
         }
-
 
         let lectura_adc =
             unsafe { core::slice::from_raw_parts(adc_buffer.as_ptr(), N_MUESTRAS) };
