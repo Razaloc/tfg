@@ -269,7 +269,7 @@ fn main() -> ! {
     defmt::println!("Iniciando STM32G474...");
     let dp = stm32g474::Peripherals::take().unwrap();
 
-    // TIM6 conserva el arranque original; los perfiles se aplican al pulsar el boton.
+    // Se aplica el perfil inicial antes de arrancar la generación sincronizada.
     let mut perfil_actual = PERFIL_INICIAL;
 
     let rcc = dp.RCC;
@@ -280,6 +280,7 @@ fn main() -> ! {
 
     let tim6 = dp.TIM6;
     configurar_tim6(&tim6);
+    aplicar_perfil_frecuencia(&tim6, &PERFILES[perfil_actual]);
 
     let dac = dp.DAC1;
     configurar_dac(&dac);
