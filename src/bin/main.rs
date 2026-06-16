@@ -46,14 +46,17 @@ const TABLA_SENO: [u16; N_MUESTRAS] = [
     601, 911, 1265, 1649,
 ];
 
-const PERFILES: [PerfilFrecuencia; 7] = [
-    PerfilFrecuencia { frecuencia_hz: 5,    psc: 169, arr: 6249, },
-    PerfilFrecuencia { frecuencia_hz: 50,   psc: 169, arr: 624, },
-    PerfilFrecuencia { frecuencia_hz: 100,  psc: 169, arr: 312, },
-    PerfilFrecuencia { frecuencia_hz: 250,  psc: 169, arr: 124, },
-    PerfilFrecuencia { frecuencia_hz: 500,  psc: 169, arr: 62, },
-    PerfilFrecuencia { frecuencia_hz: 1000, psc: 169, arr: 30, },
-    PerfilFrecuencia { frecuencia_hz: 3000, psc: 169, arr: 9, },
+const PERFILES: [PerfilFrecuencia; 10] = [
+    PerfilFrecuencia { frecuencia_hz: 5,   psc: 169, arr: 624, },
+    PerfilFrecuencia { frecuencia_hz: 10,  psc: 169, arr: 312, },
+    PerfilFrecuencia { frecuencia_hz: 25,  psc: 169, arr: 124, },
+    PerfilFrecuencia { frecuencia_hz: 50,  psc: 169, arr: 62, },
+    PerfilFrecuencia { frecuencia_hz: 100, psc: 169, arr: 30, },
+    PerfilFrecuencia { frecuencia_hz: 300, psc: 169, arr: 9, },
+    PerfilFrecuencia { frecuencia_hz: 1000, psc: 5, arr: 30, },
+    PerfilFrecuencia { frecuencia_hz: 5000, psc: 5, arr: 15, },
+    PerfilFrecuencia { frecuencia_hz: 10000, psc: 5, arr: 3, },
+    PerfilFrecuencia { frecuencia_hz: 30000, psc: 5, arr: 1, },
 ];
 
 fn habilitar_relojes(rcc: &stm32g474::RCC) {
