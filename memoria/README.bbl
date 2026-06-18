@@ -1,0 +1,29 @@
+\begin{thebibliography}{1}
+
+\bibitem{hayt2012}
+W.~H. Hayt, J.~E. Kemmerly, and S.~M. Durbin, {\em Análisis de circuitos en
+  ingeniería}.
+\newblock McGraw-Hill, 8~ed., 2012.
+
+\bibitem{oppenheim2010}
+A.~V. Oppenheim and R.~W. Schafer, {\em Discrete-Time Signal Processing}.
+\newblock Pearson, 3~ed., 2010.
+
+\bibitem{stmanual}
+STMicroelectronics, {\em RM0440 Reference manual: STM32G4 series advanced
+  Arm-based 32-bit MCUs}, 2023.
+\newblock Rev 7.
+
+\bibitem{rustbook}
+S.~Klabnik and C.~Nichols, {\em The Rust Programming Language}.
+\newblock No Starch Press, 2019.
+
+\bibitem{matthes2023}
+M.~Matthes, {\em Hands-On Rust for Embedded Systems}.
+\newblock Packt Publishing, 2023.
+
+\bibitem{grimnes2014}
+S.~Grimnes and O.~G. Martinsen, ``Bioimpedance and bioelectricity basics,''
+  {\em Academic Press}, 2014.
+
+\end{thebibliography}

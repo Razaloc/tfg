@@ -1,0 +1,48 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="450" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">Impedancia equivalente de la rama R || C</text>
+  <line x1='78' y1='46' x2='876' y2='46' stroke='#d8dde6' stroke-width='1'/>
+  <text x='68' y='50' text-anchor='end' font-size='12' fill='#344054'>29395.9</text>
+  <line x1='78' y1='126.4' x2='876' y2='126.4' stroke='#d8dde6' stroke-width='1'/>
+  <text x='68' y='130.4' text-anchor='end' font-size='12' fill='#344054'>23163.0</text>
+  <line x1='78' y1='206.8' x2='876' y2='206.8' stroke='#d8dde6' stroke-width='1'/>
+  <text x='68' y='210.8' text-anchor='end' font-size='12' fill='#344054'>16930.1</text>
+  <line x1='78' y1='287.2' x2='876' y2='287.2' stroke='#d8dde6' stroke-width='1'/>
+  <text x='68' y='291.2' text-anchor='end' font-size='12' fill='#344054'>10697.2</text>
+  <line x1='78' y1='367.6' x2='876' y2='367.6' stroke='#d8dde6' stroke-width='1'/>
+  <text x='68' y='371.6' text-anchor='end' font-size='12' fill='#344054'>4464.3</text>
+  <line x1='78' y1='448' x2='876' y2='448' stroke='#d8dde6' stroke-width='1'/>
+  <text x='68' y='452' text-anchor='end' font-size='12' fill='#344054'>-1768.6</text>
+  <line x1='78' y1='46' x2='78' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='78' y='470' text-anchor='middle' font-size='11' fill='#344054'>0.4722</text>
+  <line x1='239.273661376256' y1='46' x2='239.273661376256' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='239.273661376256' y='470' text-anchor='middle' font-size='11' fill='#344054'>4.72</text>
+  <line x1='287.720393585251' y1='46' x2='287.720393585251' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='287.720393585251' y='470' text-anchor='middle' font-size='11' fill='#344054'>9.424</text>
+  <line x1='352.032661371125' y1='46' x2='352.032661371125' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='352.032661371125' y='470' text-anchor='middle' font-size='11' fill='#344054'>23.6</text>
+  <line x1='400.041473282794' y1='46' x2='400.041473282794' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='400.041473282794' y='470' text-anchor='middle' font-size='11' fill='#344054'>46.83</text>
+  <line x1='449.698592104322' y1='46' x2='449.698592104322' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='449.698592104322' y='470' text-anchor='middle' font-size='11' fill='#344054'>95.15</text>
+  <line x1='528.970180274081' y1='46' x2='528.970180274081' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='528.970180274081' y='470' text-anchor='middle' font-size='11' fill='#344054'>295</text>
+  <line x1='683.998952931552' y1='46' x2='683.998952931552' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='683.998952931552' y='470' text-anchor='middle' font-size='11' fill='#344054'>2697</text>
+  <line x1='730.331146797564' y1='46' x2='730.331146797564' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='730.331146797564' y='470' text-anchor='middle' font-size='11' fill='#344054'>5225</text>
+  <line x1='827.430985768623' y1='46' x2='827.430985768623' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='827.430985768623' y='470' text-anchor='middle' font-size='11' fill='#344054'>2.09E+04</text>
+  <line x1='876' y1='46' x2='876' y2='448' stroke='#eef1f5' stroke-width='1'/>
+  <text x='876' y='470' text-anchor='middle' font-size='11' fill='#344054'>4.18E+04</text>
+  <line x1="78" y1="46" x2="78" y2="448" stroke="#111827" stroke-width="1.4"/>
+  <line x1="78" y1="448" x2="876" y2="448" stroke="#111827" stroke-width="1.4"/>
+  <polyline points="78.0,171.2 239.3,171.1 287.7,119.3 352.0,73.7 400.0,97.9 449.7,170.4 529.0,170.5 684.0,174.6 730.3,129.1 827.4,261.1 876.0,298.7" fill="none" stroke="#0066cc" stroke-width="2.8"/>
+  <polyline points="78.0,167.2 239.3,167.2 287.7,167.2 352.0,167.3 400.0,167.6 449.7,169.0 529.0,183.3 684.0,352.2 730.3,386.3 827.4,415.4 876.0,420.3" fill="none" stroke="#c2410c" stroke-width="2.8"/>
+  <text x="477" y="502" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#111827">Frecuencia (Hz)</text>
+  <text transform="translate(18 247) rotate(-90)" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#111827">|Z| (ohm)</text>
+  <rect x="650" y="44" width="222" height="50" fill="white" stroke="#d0d5dd"/>
+  <line x1="664" y1="62" x2="702" y2="62" stroke="#0066cc" stroke-width="3"/>
+  <text x="710" y="66" font-family="Arial, sans-serif" font-size="13" fill="#111827">Estimada desde medidas</text>
+  <line x1="664" y1="82" x2="702" y2="82" stroke="#c2410c" stroke-width="3"/><text x="710" y="86" font-family="Arial, sans-serif" font-size="13" fill="#111827">Modelo teorico</text>
+</svg>

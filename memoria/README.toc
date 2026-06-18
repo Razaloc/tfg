@@ -1,0 +1,86 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{Resumen}{2}{section*.1}%
+\contentsline {section}{Glosario de términos y acrónimos}{4}{section*.3}%
+\contentsline {section}{\numberline {1}Introducción del proyecto}{5}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Resumen de objetivos}{5}{subsection.1.1}%
+\contentsline {section}{\numberline {2}Descripción del proyecto}{5}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Estado del arte}{6}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}Fundamentos teóricos}{6}{subsubsection.2.1.1}%
+\contentsline {paragraph}{Concepto de impedancia}{6}{section*.4}%
+\contentsline {paragraph}{Concepto de fasor}{6}{section*.5}%
+\contentsline {subsubsection}{\numberline {2.1.2}Medición de la impedancia}{7}{subsubsection.2.1.2}%
+\contentsline {paragraph}{Generador de señales y osciloscopio}{7}{section*.6}%
+\contentsline {paragraph}{Medición LCR o puente de impedancia}{7}{section*.7}%
+\contentsline {paragraph}{Medición en dos puntos}{7}{section*.8}%
+\contentsline {paragraph}{Medición en tres puntos}{8}{section*.9}%
+\contentsline {paragraph}{Medición en cuatro puntos}{8}{section*.10}%
+\contentsline {paragraph}{MFIA Impedance Analyzer}{8}{section*.11}%
+\contentsline {paragraph}{Impedimed SFB7}{8}{section*.12}%
+\contentsline {paragraph}{Keysight E4980A Precision LCR Meter}{8}{section*.13}%
+\contentsline {subsection}{\numberline {2.2}Objetivos del proyecto}{9}{subsection.2.2}%
+\contentsline {section}{\numberline {3}Planificación del proyecto}{10}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Análisis de requisitos}{10}{subsection.3.1}%
+\contentsline {paragraph}{R1 – Microcontrolador como núcleo del sistema}{10}{section*.14}%
+\contentsline {subparagraph}{R1.1 – DAC}{10}{section*.15}%
+\contentsline {subparagraph}{R1.2 – ADC}{10}{section*.16}%
+\contentsline {subparagraph}{R1.3 – Temporizadores}{10}{section*.17}%
+\contentsline {paragraph}{R2 – Generación de señal senoidal}{10}{section*.18}%
+\contentsline {paragraph}{R3 – Modificación de la señal}{10}{section*.19}%
+\contentsline {paragraph}{R4 – Uso de DMA}{10}{section*.20}%
+\contentsline {paragraph}{R5 – Medición de la señal en la muestra}{11}{section*.21}%
+\contentsline {paragraph}{R6 – Interpretación y transmisión de resultados}{11}{section*.22}%
+\contentsline {subsection}{\numberline {3.2}Elección de componentes y herramientas}{11}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Microcontrolador}{11}{subsubsection.3.2.1}%
+\contentsline {paragraph}{Componentes principales del STM32G474RE}{11}{section*.23}%
+\contentsline {subsubsection}{\numberline {3.2.2}Resistencias}{12}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Software}{12}{subsubsection.3.2.3}%
+\contentsline {paragraph}{Ventajas del uso de Rust en sistemas embebidos}{13}{section*.24}%
+\contentsline {paragraph}{Desventajas y desafíos del uso de Rust}{13}{section*.25}%
+\contentsline {subsubsection}{\numberline {3.2.4}Infraestructura de compilación y ejecución}{14}{subsubsection.3.2.4}%
+\contentsline {paragraph}{Configuración del paquete con \texttt {Cargo.toml}}{14}{section*.26}%
+\contentsline {paragraph}{Compilación cruzada con \texttt {.cargo/config.toml}}{14}{section*.27}%
+\contentsline {paragraph}{Mapa de memoria con \texttt {memory.x}}{15}{section*.28}%
+\contentsline {subsubsection}{\numberline {3.2.5}Ejecución del firmware y organización de memoria}{16}{subsubsection.3.2.5}%
+\contentsline {paragraph}{Código común de arranque y errores en \texttt {src/lib.rs}}{17}{section*.29}%
+\contentsline {paragraph}{Estructura de binarios de prueba}{17}{section*.30}%
+\contentsline {paragraph}{Depuración con \texttt {defmt} y \texttt {probe-rs}}{17}{section*.31}%
+\contentsline {paragraph}{Importancia de la infraestructura en el proyecto}{17}{section*.32}%
+\contentsline {subsubsection}{\numberline {3.2.6}Instrumentación de laboratorio}{18}{subsubsection.3.2.6}%
+\contentsline {subsubsection}{\numberline {3.2.7}Otros componentes considerados}{18}{subsubsection.3.2.7}%
+\contentsline {subsection}{\numberline {3.3}Análisis de costes estimados}{18}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Planificación de hitos}{19}{subsection.3.4}%
+\contentsline {subsubsection}{\numberline {3.4.1}H1 -- Aprendizaje y entorno Rust embebido funcional}{19}{subsubsection.3.4.1}%
+\contentsline {subsubsection}{\numberline {3.4.2}H2 -- Generación de señal senoidal mediante DAC}{20}{subsubsection.3.4.2}%
+\contentsline {subsubsection}{\numberline {3.4.3}H3 -- Adquisición de señal mediante ADC}{20}{subsubsection.3.4.3}%
+\contentsline {subsubsection}{\numberline {3.4.4}H4 -- Validación experimental con Analog Discovery 3}{20}{subsubsection.3.4.4}%
+\contentsline {subsubsection}{\numberline {3.4.5}H5 -- Documentación y cierre del proyecto}{21}{subsubsection.3.4.5}%
+\contentsline {subsubsection}{\numberline {3.4.6}Resumen temporal}{21}{subsubsection.3.4.6}%
+\contentsline {subsubsection}{\numberline {3.4.7}Diagrama de Gantt}{22}{subsubsection.3.4.7}%
+\contentsline {section}{\numberline {4}Desarrollo del proyecto}{23}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Fundamentos del Sistema Microcontrolador}{23}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Diseño del sistema}{23}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Funcionamiento integrado}{23}{subsubsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.3}Desarrollo del sistema (Fases)}{23}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}F1: Planteamiento y estudio inicial}{24}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}F2: Aprendizaje de Rust embebido e infraestructura}{24}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3}F3: Estudio del STM32G474RE y periféricos analógicos}{24}{subsubsection.4.3.3}%
+\contentsline {subsubsection}{\numberline {4.3.4}F4: Prototipos mínimos de GPIO, DAC y ADC}{24}{subsubsection.4.3.4}%
+\contentsline {subsubsection}{\numberline {4.3.5}F5: Integración DAC-DMA-TIM6}{24}{subsubsection.4.3.5}%
+\contentsline {subsubsection}{\numberline {4.3.6}F6: Integración ADC-DMA y lectura de muestras}{25}{subsubsection.4.3.6}%
+\contentsline {subsubsection}{\numberline {4.3.7}F7: Selección de perfiles de frecuencia mediante pulsador}{25}{subsubsection.4.3.7}%
+\contentsline {subsubsection}{\numberline {4.3.8}F8: Validación experimental con carga resistiva-capacitiva}{26}{subsubsection.4.3.8}%
+\contentsline {paragraph}{Formas de onda observadas}{27}{section*.36}%
+\contentsline {paragraph}{Modelo eléctrico y análisis cuantitativo}{29}{section*.37}%
+\contentsline {subsection}{\numberline {4.4}Seguimiento de la planificación}{31}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Plan de pruebas}{31}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Cierre del documento}{31}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Conclusiones}{31}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Galería de figuras}{32}{subsection.5.2}%
+\contentsline {section}{Bibliografía}{33}{section*.38}%
+\contentsline {section}{\numberline {A}Anexos}{34}{appendix.Alph1}%
+\contentsline {subsection}{\numberline {A.1}Implementación del Firmware en Rust}{34}{subsection.Alph1.1}%
+\contentsline {subsection}{\numberline {A.2}Configuración de Periféricos y Bucle Principal}{34}{subsection.Alph1.2}%
+\contentsline {paragraph}{Inicialización del sistema}{34}{section*.40}%
+\contentsline {subsection}{\numberline {A.3}Gestión de perfiles de frecuencia y pulsador de usuario}{41}{subsection.Alph1.3}%
+\contentsline {subsection}{\numberline {A.4}Detalles de la Síntesis Digital Directa (DDS)}{41}{subsection.Alph1.4}%
+\contentsline {subsection}{\numberline {A.5}Uso de inteligencia artificial generativa}{41}{subsection.Alph1.5}%

@@ -1,0 +1,1824 @@
+% README del proyecto en LaTeX
+\documentclass[11pt,a4paper]{article}
+\usepackage[spanish, es-tabla]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{pgfgantt}
+\usepackage{pdflscape}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{
+    babel,
+    arrows.meta,
+    positioning,
+    shapes.geometric,
+    shapes.misc,
+    fit,
+    calc
+}
+
+
+
+% === PREÁMBULO SEGURO PARA EVITAR ERRORES ===
+\usetikzlibrary{shapes,arrows}
+
+\tikzstyle{block} = [rectangle, draw, rounded corners,
+                     minimum width=3cm, minimum height=1cm,
+                     align=center]
+\tikzstyle{arrow} = [->, thick]
+
+
+\geometry{margin=2.5cm}
+
+\title{ \textbf{ 
+Generación y Adquisición de Señal Senoidal en STM32G474RE} \\
+\large Grado en Ingeniería Informática \\ Universidad de Sevilla 
+}
+\author{Autor: Rafael García Ruiz \\ \small Director: Pablo Pérez García}
+\date{2025/2026}
+
+\usepackage{color}
+\usepackage{listings}
+\definecolor{GrayCodeBlock}{RGB}{241,241,241}
+\definecolor{BlackText}{RGB}{110,107,94}
+\definecolor{RedTypename}{RGB}{182,86,17}
+\definecolor{GreenString}{RGB}{96,172,57}
+\definecolor{PurpleKeyword}{RGB}{184,84,212}
+\definecolor{GrayComment}{RGB}{170,170,170}
+\definecolor{GoldDocumentation}{RGB}{180,165,45}
+\lstdefinelanguage{rust}
+{
+    columns=fullflexible,
+    keepspaces=true,
+    frame=single,
+    framesep=0pt,
+    framerule=0pt,
+    framexleftmargin=4pt,
+    framexrightmargin=4pt,
+    framextopmargin=5pt,
+    framexbottommargin=3pt,
+    xleftmargin=4pt,
+    xrightmargin=4pt,
+    backgroundcolor=\color{GrayCodeBlock},
+    basicstyle=\ttfamily\color{BlackText},
+    keywords={
+        true,false,
+        unsafe,async,await,move,
+        use,pub,crate,super,self,mod,
+        struct,enum,fn,const,static,let,mut,ref,type,impl,dyn,trait,where,as,
+        break,continue,if,else,while,for,loop,match,return,yield,in
+    },
+    keywordstyle=\color{PurpleKeyword},
+    ndkeywords={
+        bool,u8,u16,u32,u64,u128,i8,i16,i32,i64,i128,char,str,
+        Self,Option,Some,None,Result,Ok,Err,String,Box,Vec,Rc,Arc,Cell,RefCell,HashMap,BTreeMap,
+        macro_rules
+    },
+    ndkeywordstyle=\color{RedTypename},
+    comment=[l][\color{GrayComment}\slshape]{//},
+    morecomment=[s][\color{GrayComment}\slshape]{/*}{*/},
+    morecomment=[l][\color{GoldDocumentation}\slshape]{///},
+    morecomment=[s][\color{GoldDocumentation}\slshape]{/*!}{*/},
+    morecomment=[l][\color{GoldDocumentation}\slshape]{//!},
+    morecomment=[s][\color{RedTypename}]{\#![}{]},
+    morecomment=[s][\color{RedTypename}]{\#[}{]},
+    stringstyle=\color{GreenString},
+    string=[b]"
+}
+\newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
+\newcommand{\mysubparagraph}[1]{\subparagraph{#1}\mbox{}\\}
+
+
+\begin{document}
+\maketitle
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{uslogo.png}
+\end{figure}
+\newpage
+
+\section*{Resumen}
+\addcontentsline{toc}{section}{Resumen}
+
+El presente Trabajo de Fin de Grado aborda el diseño y desarrollo de un sistema embebido para la generación y adquisición de señales senoidales aplicado al estudio de impedancias. El sistema se implementa sobre el microcontrolador \textbf{STM32G474RE}, aprovechando sus periféricos internos con el objetivo de reducir la necesidad de componentes externos y obtener una solución compacta, eficiente y de bajo coste.
+
+El funcionamiento del dispositivo se basa en la generación de una señal senoidal mediante el convertidor digital-analógico (\textbf{DAC}) del microcontrolador. Dicha señal se obtiene a partir de una tabla de muestras precalculada y se transmite al periférico mediante \textbf{DMA}, utilizando un temporizador interno como fuente de disparo para garantizar una frecuencia de actualización estable. La señal generada se aplica posteriormente a una muestra o carga de prueba, cuya respuesta es adquirida mediante el convertidor analógico-digital (\textbf{ADC}), también asistido por DMA.
+
+Una parte fundamental del proyecto consiste en la sincronización entre la generación y la adquisición de la señal. Para ello se emplea el temporizador \textbf{TIM6}, que permite coordinar el funcionamiento del DAC y del ADC mediante eventos hardware, reduciendo la intervención de la CPU y minimizando posibles errores derivados de la latencia del software.
+
+El firmware del sistema se desarrolla en \textbf{Rust} en un entorno \textit{bare-metal}, sin sistema operativo ni biblioteca estándar. Esta elección permite explorar el uso de un lenguaje moderno en sistemas embebidos, destacando sus ventajas en cuanto a seguridad de memoria, control de recursos y robustez del código. Durante el desarrollo se configura una infraestructura completa de compilación cruzada, carga y depuración mediante herramientas como \texttt{Cargo}, \texttt{probe-rs} y \texttt{defmt}.
+
+Finalmente, el sistema se valida mediante pruebas experimentales orientadas a comprobar la correcta generación de la señal senoidal, la adquisición de muestras mediante el ADC y la estabilidad del funcionamiento basado en DMA. El proyecto demuestra la viabilidad de utilizar el STM32G474RE con Rust como plataforma integrada para aplicaciones de generación, adquisición y análisis de señales analógicas, sentando las bases para futuros desarrollos relacionados con la caracterización eléctrica de materiales o tejidos biológicos.
+
+\bigskip
+
+\noindent\textbf{Palabras clave:} STM32G474RE, Rust, bare-metal, no-std, bioimpedancia, DAC, ADC, DMA, TIM6, sistemas embebidos, señal senoidal.
+
+\newpage
+
+\tableofcontents
+\section*{Glosario de términos y acrónimos}
+\addcontentsline{toc}{section}{Glosario de términos y acrónimos}
+
+\begin{description}
+    \item[ADC (Analog-to-Digital Converter):] Periférico que convierte una señal analógica de tensión en un valor digital numérico.
+    \item[DAC (Digital-to-Analog Converter):] Periférico que convierte un valor numérico digital en una señal de tensión analógica.
+    \item[DMA (Direct Memory Access):] Mecanismo que permite a los periféricos acceder a la memoria RAM independientemente de la CPU, reduciendo la carga de procesamiento.
+    \item[HAL (Hardware Abstraction Layer):] Capa de software que permite interactuar con el hardware del microcontrolador sin necesidad de manipular registros directamente.
+    \item[Impedancia ($Z$):] Medida de oposición total que presenta un circuito al paso de una corriente alterna.
+    \item[Jitter:] Variabilidad temporal en la ejecución de un evento o en la llegada de una señal, crítica en sistemas de tiempo real.
+    \item[no\_std:] Atributo de Rust que indica que el programa no utiliza la biblioteca estándar (std), permitiendo su ejecución en sistemas sin sistema operativo (bare-metal).
+    \item[Ownership:] Concepto central de Rust que gestiona la seguridad de memoria mediante reglas de propiedad y préstamo de variables.
+    \item[PCB (Printed Circuit Board):] Placa de circuito impreso donde se montan y conectan los componentes electrónicos.
+    \item[RCC (Reset and Clock Control):] Módulo encargado de gestionar los relojes y el reinicio de los periféricos en el STM32.
+    \item[UART (Universal Asynchronous Receiver-Transmitter):] Protocolo de comunicación serie utilizado habitualmente para transmitir datos a un ordenador.
+\end{description}
+\newpage
+
+\section{Introducción del proyecto}
+
+El análisis de las propiedades eléctricas de los tejidos biológicos, conocido como bioimpedancia, se ha consolidado como una herramienta fundamental en la medicina moderna para la caracterización de estados fisiológicos y patológicos. Sin embargo, el diseño de instrumentación precisa y de bajo coste para este propósito presenta desafíos significativos en la sincronización de señales y en la fiabilidad del software embebido.
+
+El presente Trabajo de Fin de Grado aborda el diseño, desarrollo e implementación de un sistema de adquisición de señales biomédicas basado en el microcontrolador de alto rendimiento \textbf{STM32G474RE}. La propuesta se diferencia de las soluciones tradicionales por el uso del lenguaje de programación \textbf{Rust}, cuya seguridad de memoria y gestión de recursos sin tiempo de ejecución (\textit{no-std}) ofrece una robustez superior para aplicaciones críticas.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=4.5cm]
+\node[block] (dac) {DAC};
+\node[block, right of=dac] (sample) {Muestra};
+\node[block, right of=sample] (adc) {ADC};
+
+\draw[arrow] (dac) -- (sample);
+\draw[arrow] (sample) -- (adc);
+\end{tikzpicture}
+\caption{Diagrama conceptual del sistema}
+\end{figure}
+
+
+\subsection{Resumen de objetivos}
+
+El objetivo del proyecto es desarrollar una plataforma embebida capaz de generar una señal senoidal mediante el DAC del STM32G474RE y adquirir su respuesta mediante el ADC, utilizando Rust como lenguaje de implementación y periféricos internos del microcontrolador para reducir la intervención de la CPU.
+\begin{itemize}
+    \item \textbf{Desarrollo de un motor de síntesis digital:} Implementar la generación de ondas senoidales mediante el uso coordinado de tablas en memoria, acceso directo a memoria (DMA) y convertidores digital-analógico (DAC).
+    \item \textbf{Sincronización de hardware:} Configurar un sistema de disparo (\textit{triggering}) basado en temporizadores para garantizar que la adquisición (ADC) y la generación (DAC) ocurran en fase, eliminando el error por latencia de software.
+    \item \textbf{Implementación en Rust embebido:} Explorar y validar el uso de Rust en un entorno \textit{bare-metal}, accediendo a los registros del microcontrolador mediante la capa PAC disponible para la familia STM32G4.
+    \item \textbf{Monitorización de muestras:} Establecer un flujo de datos eficiente para observar las muestras adquiridas en tiempo real mediante \texttt{defmt}, RTT y \texttt{probe-rs}.
+\end{itemize}
+
+A través de estos objetivos, el proyecto busca demostrar que es posible desarrollar un prototipo funcional de instrumentación embebida utilizando componentes de bajo coste y lenguajes de programación modernos.
+
+
+\section{Descripción del proyecto}
+
+En este proyecto se aborda el diseño y desarrollo de un sistema de adquisición biomédica basado en un microcontrolador \textbf{STM32G474RE}. Su función principal es generar una señal senoidal controlada mediante el DAC y adquirir la señal resultante mediante el ADC tras atravesar una muestra o carga de prueba. La comparación externa de ambas señales permite observar efectos relacionados con sus propiedades eléctricas, tales como atenuación, filtrado o variaciones de amplitud asociadas a la impedancia.
+
+La coordinación entre generación y adquisición se realiza mediante \textbf{TIM6} y \textbf{DMA}. El temporizador proporciona el evento periódico de disparo, mientras que el DMA transfiere muestras hacia el DAC y desde el ADC sin requerir una intervención continua de la CPU.
+
+El diseño del sistema se inspira en enfoques previamente utilizados en instrumentación biomédica basada en microcontroladores y análisis de señal aplicada al estudio de propiedades tisulares.
+
+El dispositivo se divide en dos bloques funcionales principales:
+
+\begin{itemize}
+    \item \textbf{Generación de la señal:} producción de una onda senoidal a partir de una tabla precalculada de 12~bits, transferida al DAC mediante DMA y temporizada por TIM6.
+
+    \item \textbf{Lectura y monitorización:} adquisición sincronizada mediante ADC y almacenamiento de muestras en memoria mediante DMA, con visualización posterior mediante trazas de depuración.
+\end{itemize}
+
+Durante el desarrollo del proyecto se busca implementar la mayor parte del sistema utilizando los periféricos internos del microcontrolador, reduciendo la necesidad de componentes externos.
+
+\subsection{Estado del arte}
+
+\subsubsection{Fundamentos teóricos}
+
+\myparagraph{Concepto de impedancia}
+
+La \textbf{impedancia} (\(Z\)) es la medida de la oposición que presenta un circuito al paso de una corriente cuando se aplica una tensión alterna \cite{hayt2012}. Constituye un parámetro fundamental en el análisis de sistemas eléctricos y electrónicos, ya que describe la relación entre el voltaje y la corriente en régimen sinusoidal. Su definición básica es:
+
+\[
+Z = \frac{V}{I} \quad [\Omega]
+\]
+
+A diferencia de la corriente continua (CC), donde únicamente interviene la resistencia, en corriente alterna (CA) la respuesta del circuito depende también de la \textbf{frecuencia} de la señal. Esto se debe a la presencia de elementos \emph{reactivos} (condensadores e inductancias), que modifican tanto la amplitud como la fase de la corriente respecto al voltaje aplicado.
+
+Por ello, la impedancia combina dos componentes y se expresa como un número complejo:
+
+\[
+Z = R + jX \quad [\Omega]
+\]
+
+donde:
+\begin{itemize}
+    \item \(R\) es la parte real, correspondiente a la \textbf{resistencia}, que describe la disipación de energía.
+    \item \(X\) es la parte imaginaria, la \textbf{reactancia}, asociada a los efectos capacitivos e inductivos que provocan variaciones en la fase de la corriente.
+\end{itemize}
+
+En consecuencia, la impedancia se representa de forma vectorial incorporando tanto magnitud como fase, características esenciales para el análisis de señales sinusoidales.
+
+\myparagraph{Concepto de fasor}
+
+Las señales presentes en los circuitos de corriente alterna suelen ser de naturaleza sinusoidal. Para simplificar su análisis, se emplea la representación mediante \textbf{fasores} \cite{oppenheim2010}, que transforma magnitudes dependientes del tiempo en números complejos de módulo y fase constante.
+
+Una tensión sinusoidal puede expresarse como:
+
+\[
+v(t) = V_{\text{max}} \cdot \sin(\omega t)
+\]
+
+donde:
+\begin{itemize}
+    \item \(v(t)\): tensión instantánea.
+    \item \(V_{\text{max}}\): amplitud o valor máximo de la señal.
+    \item \(\omega t\): argumento o posición angular de la onda, siendo \(\omega\) la frecuencia angular.
+\end{itemize}
+
+Los fasores permiten representar esta señal mediante un número complejo cuya:
+\begin{itemize}
+    \item \textbf{magnitud} se corresponde con la amplitud (o valor eficaz) de la onda,
+    \item \textbf{fase} describe el desplazamiento angular respecto a una referencia.
+\end{itemize}
+
+Dado que la impedancia también se expresa como un número complejo, la representación fasorial simplifica notablemente el análisis de circuitos en régimen permanente sinusoidal. Por ello constituye una herramienta fundamental para describir impedancias y estudiar el comportamiento eléctrico de materiales, tejidos o componentes electrónicos.
+
+\subsubsection{Medición de la impedancia}
+
+La medición de impedancia es fundamental para analizar y diseñar circuitos eléctricos y electrónicos. Su valor proporciona información clave sobre el comportamiento del sistema ante diferentes frecuencias, especialmente debido a que la impedancia depende de la reactancia, la cual varía con la frecuencia. Por ello, resulta necesario realizar mediciones en un rango adecuado de frecuencias para identificar posibles fallos, optimizar el rendimiento del circuito y evaluar su comportamiento dinámico.
+
+Dado que la impedancia es un valor complejo, su medición requiere instrumentos o técnicas específicas que permitan determinar tanto su magnitud como su fase.
+
+\myparagraph{Generador de señales y osciloscopio}
+
+Una técnica básica de medición consiste en generar una señal conocida, generalmente sinusoidal, mediante un generador de señales. La señal se aplica al componente bajo prueba, observando la respuesta mediante un osciloscopio. Este método permite comparar la amplitud, fase y forma de la señal aplicada con la señal resultante, proporcionando una evaluación cualitativa del comportamiento del circuito.
+
+\myparagraph{Medición LCR o puente de impedancia}
+
+El puente LCR permite medir impedancias con gran precisión. El método compara la impedancia desconocida con elementos de impedancia conocida. Ajustando estos elementos hasta equilibrar el puente, es posible determinar la impedancia del componente bajo prueba con elevada exactitud.
+
+\myparagraph{Medición en dos puntos}
+
+Este método mide la resistencia o impedancia del elemento bajo prueba en serie con una resistencia auxiliar. Se asume que la resistencia auxiliar es despreciable frente a la del elemento medido. Aunque es un método sencillo, puede producir errores si ambas resistencias son comparables. Debido a su simplicidad, este será el método utilizado en nuestro proyecto.
+
+\myparagraph{Medición en tres puntos}
+
+En este caso se utilizan dos resistencias auxiliares adicionales. Se realizan tres mediciones: \(R_{12}\), \(R_{23}\) y \(R_{13}\). La resistencia buscada se calcula mediante:
+
+\[
+R_1 = \frac{R_{12} - R_{23} + R_{13}}{2}
+\]
+
+Este método mejora la precisión respecto al de dos puntos, aunque puede presentar errores si las resistencias auxiliares son demasiado altas o si no se mantiene una separación adecuada entre puntos de medición.
+
+\myparagraph{Medición en cuatro puntos}
+
+Este método emplea cuatro electrodos: dos para inyectar corriente y dos para medir la caída de tensión. La separación entre los electrodos de corriente y de medida reduce la influencia de las resistencias de contacto, permitiendo una medición precisa. La impedancia se calcula mediante la ley de Ohm:
+
+\[
+Z = \frac{V}{I}
+\]
+
+\myparagraph{MFIA Impedance Analyzer}
+
+El MFIA es un analizador de impedancias digital de alta precisión que opera entre 1~mHz y 500~kHz, con una exactitud básica del 0.05\%. Su rango de medición abarca desde 1~m\(\Omega\) hasta 1~T\(\Omega\). Sus aplicaciones incluyen ingeniería eléctrica, caracterización de materiales y bioimpedancia.
+
+\myparagraph{Impedimed SFB7}
+
+El dispositivo SFB7 realiza espectroscopia de bioimpedancia tetrapolar a 256 frecuencias entre 4~kHz y 1000~kHz. Emplea modelos como el de Cole y la teoría de mezcla de Hanai para estimar parámetros corporales como TBW, ECF, ICF, FFM y FM, lo que lo convierte en un estándar en estudios biomédicos.
+
+\myparagraph{Keysight E4980A Precision LCR Meter}
+
+El medidor LCR Keysight E4980A es ampliamente utilizado por su capacidad para medir inductancia, capacitancia y resistencia con alta precisión. Opera entre 20~Hz y 2~MHz, con una exactitud básica del 0.05\%, ofreciendo gran estabilidad y repetibilidad en un amplio rango de mediciones.
+
+\begin{figure}[H]
+\centering
+
+\shorthandoff{<>}
+
+\begin{tikzpicture}
+
+\def\Rx{3}
+\def\Xy{2}
+
+% Ejes
+\draw[->] (-0.3,0) -- (4,0) node[right] {$R$};
+\draw[->] (0,-0.3) -- (0,3) node[above] {$jX$};
+
+% Vector
+\draw[->, thick] (0,0) -- (\Rx,\Xy) node[midway, above] {$Z$};
+
+% Proyecciones
+\draw[dashed] (\Rx,0) -- (\Rx,\Xy);
+\draw[dashed] (0,\Xy) -- (\Rx,\Xy);
+
+% Etiquetas
+\node[below] at (\Rx,0) {$R$};
+\node[left] at (0,\Xy) {$X$};
+
+% Ángulo
+\draw (0.8,0) arc[start angle=0,end angle={atan(\Xy/\Rx)},radius=0.8];
+\node at (1,0.3) {$\phi$};
+
+\end{tikzpicture}
+
+\shorthandon{<>}
+
+\caption{Representación fasorial de la impedancia compleja}
+\label{fig:fasor}
+\end{figure}
+
+
+\subsection{Objetivos del proyecto}
+
+El objetivo principal de este proyecto es desarrollar un sistema embebido capaz de generar una señal senoidal, aplicarla a una muestra y medir la señal resultante tras atravesar dicho medio, con el fin de obtener información relacionada con sus propiedades eléctricas. Todo el sistema se implementará sobre el microcontrolador \textbf{STM32G474RE}, aprovechando al máximo sus periféricos internos para minimizar la necesidad de componentes externos.
+
+El dispositivo deberá cumplir las siguientes características fundamentales:
+
+\begin{itemize}
+    \item \textbf{Implementación interna}: toda la lógica del sistema y el mayor número posible de funciones deben realizarse mediante los periféricos integrados en el microcontrolador (DAC, ADC, temporizadores, DMA, etc.).
+    \item \textbf{Generación y adquisición de señal}: el sistema debe generar una señal senoidal estable y adquirir la señal de salida tras atravesar la muestra o carga de prueba.
+    \item \textbf{Configurabilidad}: la frecuencia de la señal generada debe poder ajustarse mediante perfiles predefinidos para permitir ensayos en distintos rangos de operación. La amplitud se mantiene fija en esta versión del prototipo mediante la tabla senoidal empleada por el DAC.
+\end{itemize}
+
+Además del objetivo principal, el desarrollo del proyecto permitirá adquirir conocimientos y habilidades en diversas áreas:
+
+\begin{itemize}
+    \item \textbf{Microcontroladores}: estudio y configuración del STM32G474RE, programación en Rust y manejo de periféricos como DAC, ADC, temporizadores, GPIO y sistemas de reloj.
+    \item \textbf{DMA (Direct Memory Access)}: configuración del DMA para automatizar la transferencia de datos en la generación y adquisición de señal, reduciendo la carga de la CPU y aumentando el rendimiento.
+    \item \textbf{Señal analógica}: acondicionamiento externo básico y manejo de señales alternas en el contexto de generación y adquisición con DAC y ADC.
+    \item \textbf{Impedancia}: adquisición y análisis de datos para estudiar la impedancia de muestras, interpretación de los resultados y relación con su comportamiento eléctrico.
+    \item \textbf{Procesamiento de ondas}: trabajo con señales sinusoidales, tablas de onda, ajuste de frecuencia y análisis externo de las señales adquiridas.
+    \item \textbf{Montaje y soldadura}: desarrollo de un prototipo inicial sobre placa perforada, instalación y conexión de componentes externos y verificación del circuito.
+    \item \textbf{Conversión CA/CC}: generación de una señal alterna mediante el DAC a partir de una referencia continua, y conversión de la señal resultante nuevamente a valores digitales mediante el ADC.
+\end{itemize}
+
+El alcance del proyecto incluye el estudio del estado del arte, el diseño conceptual y electrónico del sistema, la implementación y verificación de un prototipo funcional de laboratorio y la obtención de medidas experimentales con cargas conocidas. El diseño de una versión compacta o de una PCB dedicada queda planteado como una posible línea de continuación.
+
+\section{Planificación del proyecto}
+\subsection{Análisis de requisitos}
+
+\myparagraph{R1 – Microcontrolador como núcleo del sistema}
+El diseño del sistema debe implementarse empleando el microcontrolador \textbf{STM32G474RE} como elemento principal, utilizando tantos periféricos internos como sea posible con el fin de minimizar la necesidad de componentes externos.
+
+\mysubparagraph{R1.1 – DAC}
+El microcontrolador debe disponer de al menos un DAC funcional para generar la señal senoidal inicial que será aplicada a la muestra (requisito R2).
+
+\mysubparagraph{R1.2 – ADC}
+El sistema debe contar con un ADC de adecuada resolución y frecuencia de muestreo para medir la señal resultante tras atravesar la muestra. En esta versión del proyecto no es necesaria la presencia de múltiples ADC.
+
+\mysubparagraph{R1.3 – Temporizadores}
+El sistema debe contar con al menos un temporizador capaz de controlar tanto la generación de la señal como el disparo del ADC para asegurar una captura sincronizada. En este proyecto se emplea un único temporizador (\textbf{TIM6}) como generador de eventos TRGO.
+
+% ============================================================
+% DIAGRAMA 2: SINCRONIZACIÓN TIM6 - DAC - ADC - DMA
+% ============================================================
+
+\begin{figure}[H]
+\centering
+\resizebox{0.95\textwidth}{!}{%
+\begin{tikzpicture}[
+    signal/.style={thick},
+    arrow/.style={-{Latex[length=2.5mm]}, thick},
+    label/.style={font=\small},
+    ticklabel/.style={font=\scriptsize}
+]
+
+% Ejes temporales
+\draw[arrow] (0,-0.3) -- (11.5,-0.3) node[right, label]{tiempo};
+
+% Etiquetas
+\node[label, anchor=east] at (-0.3,3.2) {TIM6 TRGO};
+\node[label, anchor=east] at (-0.3,2.2) {Actualización DAC};
+\node[label, anchor=east] at (-0.3,1.2) {Muestreo ADC};
+\node[label, anchor=east] at (-0.3,0.2) {Transferencias DMA};
+
+% Señal TIM6 TRGO: pulsos
+\foreach \x in {1,3,5,7,9} {
+    \draw[signal] (\x,3) -- (\x,3.5) -- (\x+0.25,3.5) -- (\x+0.25,3);
+}
+\draw[signal] (0.4,3) -- (1,3);
+\draw[signal] (1.25,3) -- (3,3);
+\draw[signal] (3.25,3) -- (5,3);
+\draw[signal] (5.25,3) -- (7,3);
+\draw[signal] (7.25,3) -- (9,3);
+\draw[signal] (9.25,3) -- (10.8,3);
+
+% Eventos DAC
+\foreach \x/\muestra in {1/m0,3/m1,5/m2,7/m3,9/m4} {
+    \draw[arrow] (\x+0.12,2.45) -- (\x+0.12,2.0);
+    \node[ticklabel] at (\x+0.12,1.75) {\muestra};
+}
+
+% Eventos ADC
+\foreach \x/\muestra in {1/b0,3/b1,5/b2,7/b3,9/b4} {
+    \draw[arrow] (\x+0.12,1.45) -- (\x+0.12,1.0);
+    \node[ticklabel] at (\x+0.12,0.75) {\muestra};
+}
+
+% DMA
+\foreach \x/\txt in {1/DAC$\leftarrow$m0,3/DAC$\leftarrow$m1,5/DAC$\leftarrow$m2,7/ADC$\rightarrow$b3,9/ADC$\rightarrow$b4} {
+    \draw[rounded corners, draw] (\x-0.45,-0.15) rectangle (\x+0.75,0.45);
+    \node[ticklabel] at (\x+0.15,0.15) {\txt};
+}
+
+% Indicaciones de periodo
+\draw[arrow, thin] (1.12,3.85) -- (3.12,3.85);
+\node[ticklabel] at (2.12,4.1) {$T_{trigger}$};
+
+\node[ticklabel] at (5.12,-0.95) {Secuencia circular de muestras};
+
+\end{tikzpicture}%
+}
+\caption{Sincronización entre TIM6, DAC, ADC y DMA. Cada evento de actualización de TIM6 genera el disparo que actualiza el DAC y lanza una conversión del ADC.}
+\label{fig:sincronizacion-tim6-dac-adc}
+\end{figure}
+
+
+
+\myparagraph{R2 – Generación de señal senoidal}
+El sistema debe generar una señal senoidal estable mediante el DAC, utilizando una tabla precalculada y transferencia mediante DMA.
+
+\myparagraph{R3 – Modificación de la señal}
+La frecuencia de la señal senoidal debe ser configurable mediante perfiles predefinidos, permitiendo realizar mediciones bajo diferentes condiciones experimentales. La amplitud queda fijada por la tabla de muestras utilizada por el DAC en esta versión del firmware.
+
+\myparagraph{R4 – Uso de DMA}
+El sistema debe emplear \textit{Direct Memory Access} en los procesos de generación (DAC) y adquisición (ADC) con el fin de optimizar el rendimiento y minimizar la intervención del procesador.
+
+\myparagraph{R5 – Medición de la señal en la muestra}
+El sistema debe ser capaz de medir la señal tras atravesar la muestra, permitiendo analizar la atenuación y las modificaciones introducidas por ella. Para esta versión del proyecto se emplea un método de medición en dos puntos, midiendo únicamente la señal de salida.
+
+\myparagraph{R6 – Interpretación y transmisión de resultados}
+El sistema debe adquirir las muestras obtenidas mediante el ADC y transmitirlas a un ordenador mediante \texttt{defmt}, RTT y \texttt{probe-rs}, permitiendo su visualización y análisis externo.
+
+
+
+\subsection{Elección de componentes y herramientas}
+
+\subsubsection{Microcontrolador}
+
+Para cumplir los requisitos R1 y R4, el microcontrolador seleccionado debe disponer de un conjunto amplio de periféricos internos y permitir el uso de \textit{Direct Memory Access} (DMA). Además, es necesario que dichos periféricos puedan configurarse y funcionar de manera conjunta sin generar conflictos, algo que no siempre ocurre en todos los modelos disponibles en el mercado.
+
+El microcontrolador elegido para este proyecto es el \textbf{STM32G474RE}, basado en un núcleo \textbf{ARM Cortex-M4}. Este dispositivo resulta especialmente adecuado porque integra prácticamente todos los componentes necesarios para el proyecto (DAC, ADC, temporizadores y DMA), permitiendo que la mayor parte del diseño se implemente de forma interna sin recurrir a hardware externo adicional. Las únicas excepciones son elementos pasivos, como resistencias, que evidentemente no pueden integrarse en el microcontrolador. Para la configuración detallada de sus registros y capacidades analógicas se ha consultado el manual de referencia oficial \cite{stmanual}.
+
+El STM32G474RE también incorpora un sistema DMA avanzado que facilita la transferencia automática de datos entre memoria y periféricos, reduciendo significativamente la carga de procesamiento y mejorando la eficiencia general del sistema. Asimismo, la elección de un dispositivo de \textit{STMicroelectronics} resulta ventajosa, ya que su ecosistema está ampliamente documentado y es habitual en el ámbito académico y profesional.
+
+A continuación, se presentan los principales componentes integrados relevantes para este proyecto:
+
+\myparagraph{Componentes principales del STM32G474RE}
+
+\begin{itemize}
+    \item \textbf{ADCs}: 5 convertidores analógico--digital con capacidad de alta velocidad y varios canales.
+    \item \textbf{DACs}: 7 convertidores digital--analógico capaces de generar señales precisas, incluyendo salidas de 12 bits.
+    \item \textbf{Timers}: 17 temporizadores, entre los que se incluyen:
+    \begin{itemize}
+        \item 2 temporizadores de 32 bits y 2 temporizadores de 16 bits con entradas IC/OC/PWM, contador de pulsos y modo codificador.
+        \item 3 temporizadores avanzados para control de motor, con hasta 8 canales PWM y generación de tiempo muerto.
+        \item 1 temporizador de 16 bits con 2 canales IC/OC y salida PWM auxiliar.
+        \item 2 temporizadores de 16 bits con funciones IC/OC/OCN/PWM y parada de emergencia.
+        \item 2 temporizadores de vigilancia.
+        \item 1 temporizador SysTick de 24 bits.
+        \item 2 temporizadores básicos de 16 bits.
+        \item 1 temporizador de bajo consumo.
+    \end{itemize}
+    \item \textbf{DMA}: 16 canales de \textit{Direct Memory Access} con soporte para múltiples flujos independientes.
+\end{itemize}
+
+Otros microcontroladores fueron considerados durante la fase de selección, tales como el \textbf{STM32H743} y el \textbf{STM32L486}. Sin embargo, la disponibilidad inmediata del STM32G474RE en el departamento, hizo que estos candidatos fueran descartados en favor del modelo finalmente utilizado.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{stm32g474.png}
+    \caption{Microcontrolador STM32G474RE empleado en el desarrollo del sistema}
+    \label{fig:stm32g474}
+\end{figure}
+
+\subsubsection{Resistencias}
+
+Durante el desarrollo del prototipo fue necesario incorporar una serie de resistencias externas, ya que este tipo de componentes pasivos no pueden implementarse mediante los periféricos internos del microcontrolador. Para ello se emplearon resistencias SMD debido a su disponibilidad en el laboratorio, su reducido tamaño y su facilidad de integración en montajes experimentales.
+
+Estas resistencias forman parte del acondicionamiento analógico externo del sistema y permiten adaptar la etapa de señal utilizada durante las pruebas experimentales.
+
+\subsubsection{Software}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.22\textwidth]{rust-logo.png}
+    \caption{Logotipo del lenguaje Rust.}
+    \label{fig:rust-logo}
+\end{figure}
+
+El desarrollo del proyecto se ha llevado a cabo utilizando herramientas orientadas al software embebido moderno, destacando el uso del lenguaje \textbf{Rust} para la programación del microcontrolador STM32G474RE. En lugar de utilizar \textit{STM32CubeIDE}, empleado habitualmente en los proyectos académicos sobre microcontroladores STM32, se optó por un entorno más flexible basado en editores de texto y herramientas específicas de Rust. 
+
+Los entornos de desarrollo utilizados fueron:
+
+\begin{itemize}
+    \item \textbf{Rust}: lenguaje principal del firmware.
+    \item \textbf{Cargo}: compilación y gestión de dependencias.
+    \item \textbf{probe-rs}: carga y depuración sobre la placa.
+    \item \textbf{defmt}: trazas compactas para sistemas embebidos.
+    \item \textbf{Texmaker y LaTeX}: redacción de la memoria.
+    \item \textbf{WaveForms}: validación experimental con Analog Discovery 3.
+\end{itemize}
+
+\myparagraph{Ventajas del uso de Rust en sistemas embebidos}
+
+El empleo de Rust en el desarrollo del firmware ofrece una serie de beneficios significativos, destacando la \textbf{seguridad de memoria garantizada} en tiempo de compilación y su modelo de propiedad \cite{rustbook}. Además, para la implementación específica en sistemas embebidos, se han seguido las prácticas de gestión de periféricos documentadas en la literatura especializada \cite{matthes2023}.
+
+\begin{itemize}
+    \item Seguridad de memoria en un entorno sin sistema operativo.
+    \item Control de bajo nivel mediante acceso a registros sin renunciar a comprobaciones del compilador.
+    \item Ecosistema de depuración moderno mediante \texttt{probe-rs} y \texttt{defmt}.
+\end{itemize}
+
+\myparagraph{Desventajas y desafíos del uso de Rust}
+
+A pesar de sus ventajas, el uso de Rust en entornos embebidos presenta algunas limitaciones:
+
+\begin{itemize}
+    \item \textbf{Ecosistema menos maduro que C/C++}, especialmente en cuanto a HALs específicos para cada microcontrolador.
+    \item \textbf{Curva de aprendizaje más pronunciada} debido al sistema de propiedad y préstamo del lenguaje.
+    \item \textbf{Documentación menos extensa} en comparación con marcos tradicionales como STM32Cube.
+    \item Necesidad de una \textbf{configuración inicial más manual}, incluyendo \texttt{linker scripts}, soporte \texttt{no\_std}, configuración del arranque y selección del runtime.
+    \item Limitaciones en el uso de librerías externas escritas en C, que requieren interfaces \texttt{unsafe}.
+\end{itemize}
+
+En conjunto, Rust representa una alternativa moderna, segura y de alto rendimiento para el desarrollo embebido, y su empleo en este proyecto contribuye a explorar prácticas actuales y futuras tendencias en la industria.
+
+\subsubsection{Infraestructura de compilación y ejecución}
+
+Aunque el objetivo principal del proyecto es la generación y adquisición de señales analógicas, una parte esencial del desarrollo consistió en preparar una infraestructura de ejecución \textit{bare-metal} en Rust. A diferencia de una aplicación convencional ejecutada sobre un sistema operativo, el firmware desarrollado se ejecuta directamente sobre el microcontrolador, sin biblioteca estándar, sin sistema de ficheros y sin servicios proporcionados por un sistema operativo.
+
+Esto implica que el proyecto debe definir explícitamente cómo se compila el código para una arquitectura distinta a la del ordenador de desarrollo, cómo se enlaza el binario resultante en la memoria del microcontrolador, cómo se carga el programa en la placa y cómo se obtiene información de depuración durante la ejecución.
+
+\myparagraph{Configuración del paquete con \texttt{Cargo.toml}}
+
+El archivo \texttt{Cargo.toml} actúa como descriptor principal del proyecto Rust. En él se definen el nombre del paquete, la edición del lenguaje utilizada, los binarios disponibles, las dependencias externas y los perfiles de compilación.
+
+En este proyecto se emplean dependencias específicas para sistemas embebidos, entre las que destacan:
+
+\begin{itemize}
+    \item \texttt{cortex-m}: proporciona acceso a funcionalidades comunes del núcleo ARM Cortex-M.
+    \item \texttt{cortex-m-rt}: incluye el entorno mínimo de arranque necesario para ejecutar código Rust en microcontroladores Cortex-M.
+    \item \texttt{stm32g4}: proporciona acceso a los registros específicos de la familia STM32G4 mediante una capa PAC (\textit{Peripheral Access Crate}).
+    \item \texttt{defmt} y \texttt{defmt-rtt}: permiten generar trazas de depuración compactas y eficientes.
+    \item \texttt{panic-probe}: define el comportamiento del sistema ante errores críticos o situaciones de pánico.
+\end{itemize}
+
+Durante el desarrollo se trabajó con pruebas independientes para validar progresivamente partes concretas del sistema, como la lectura del ADC, la generación mediante DAC o el funcionamiento de pines GPIO, antes de integrarlas en el firmware principal. En la versión final documentada, estas funcionalidades quedan concentradas en el binario principal \texttt{main.rs}.
+
+\myparagraph{Compilación cruzada con \texttt{.cargo/config.toml}}
+
+El archivo \texttt{.cargo/config.toml} define la configuración específica de compilación para el microcontrolador. En un ordenador convencional, Rust compila por defecto para la arquitectura de la propia máquina. Sin embargo, en este proyecto el programa debe ejecutarse sobre un ARM Cortex-M4F, por lo que es necesario realizar compilación cruzada.
+
+Para ello se selecciona el target:
+
+\begin{center}
+\texttt{thumbv7em-none-eabihf}
+\end{center}
+
+Este target corresponde a microcontroladores ARM Cortex-M4 y Cortex-M7 con unidad de coma flotante hardware. La parte \texttt{none} indica que no existe sistema operativo, y por tanto el programa debe construirse como firmware autónomo.
+
+El mismo archivo configura también el \textit{runner} empleado por Cargo. Gracias a esta configuración, el comando:
+
+\begin{center}
+\texttt{cargo run --release --bin main}
+\end{center}
+
+no solo compila el firmware, sino que además invoca \texttt{probe-rs} para cargarlo directamente en la placa STM32G474RE. Esto simplifica el ciclo de desarrollo, ya que permite compilar, flashear y ejecutar desde una única orden.
+
+También se especifican opciones de enlazado, como el uso de \texttt{flip-link} y de los scripts \texttt{link.x} y \texttt{defmt.x}. Estos elementos son necesarios para situar correctamente el programa en memoria y para habilitar el sistema de trazas usado por \texttt{defmt}.
+
+\myparagraph{Mapa de memoria con \texttt{memory.x}}
+
+
+
+% ============================================================
+% DIAGRAMA 3: DISTRIBUCIÓN CONCEPTUAL FLASH / RAM
+% ============================================================
+
+\begin{figure}[H]
+\centering
+\resizebox{0.85\textwidth}{!}{%
+\begin{tikzpicture}[
+    mem/.style={
+        rectangle,
+        draw,
+        rounded corners,
+        minimum width=4.2cm,
+        minimum height=6.3cm,
+        align=center,
+        font=\small
+    },
+    item/.style={
+        rectangle,
+        draw,
+        rounded corners,
+        minimum width=3.5cm,
+        minimum height=0.75cm,
+        align=center,
+        font=\small
+    },
+    arrow/.style={-{Latex[length=2.8mm]}, thick}
+]
+
+% Bloques de memoria
+\node[mem] (flash) at (0,0) {};
+\node[font=\bfseries] at (0,2.65) {FLASH};
+
+\node[item] (code) at (0,1.65) {Código ejecutable};
+\node[item] (sine) at (0,0.55) {\texttt{TABLA\_SENO}};
+\node[item] (profiles) at (0,-0.55) {\texttt{PERFILES}};
+\node[item] (constants) at (0,-1.65) {Constantes del firmware};
+
+\node[mem] (ram) at (6,0) {};
+\node[font=\bfseries] at (6,2.65) {RAM};
+
+\node[item] (buffer) at (6,1.65) {\texttt{adc\_buffer}};
+\node[item] (profileactual) at (6,0.55) {\texttt{perfil\_actual}};
+\node[item] (stack) at (6,-0.55) {Pila};
+\node[item] (temp) at (6,-1.65) {Variables temporales};
+
+% Flechas conceptuales
+\draw[arrow] (sine.east) -- node[above, font=\scriptsize]{lectura por DMA} (buffer.west);
+\draw[arrow] (profiles.east) -- node[below, font=\scriptsize]{selección de perfil} (profileactual.west);
+
+% Nota inferior
+\node[
+    draw,
+    rounded corners,
+    align=center,
+    font=\small,
+    text width=9.7cm
+] at (3,-3.7) {
+    Los datos constantes se almacenan en Flash, mientras que los datos modificables durante la ejecución se ubican en RAM.
+};
+
+\end{tikzpicture}%
+}
+\caption{Distribución conceptual de los elementos principales del firmware entre memoria Flash y RAM.}
+\label{fig:memoria-flash-ram}
+\end{figure}
+
+\subsubsection{Ejecución del firmware y organización de memoria}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{ejecucion-firmware.png}
+    \caption{Salida por consola durante la ejecución del firmware, mostrando la frecuencia activa y las muestras adquiridas por el ADC.}
+    \label{fig:ejecucion-firmware}
+\end{figure}
+
+El archivo \texttt{memory.x} define las regiones de memoria disponibles para el firmware. En un sistema embebido, el enlazador necesita conocer la dirección de inicio y el tamaño de la memoria Flash y de la memoria RAM del microcontrolador.
+
+La memoria Flash se utiliza principalmente para almacenar el código del programa y las constantes, mientras que la RAM contiene variables globales modificables, pila, buffers y datos temporales de ejecución. En este proyecto, el buffer utilizado por el DMA para almacenar muestras del ADC depende directamente de esta configuración de memoria.
+
+Además de los buffers utilizados por DMA, el firmware emplea memoria no volátil para almacenar tablas constantes de funcionamiento. La tabla senoidal y los perfiles de frecuencia se declaran como constantes, por lo que el compilador los ubica en la región de memoria Flash. Esto permite disponer de varias configuraciones predefinidas sin ocupar RAM dinámica ni requerir asignación en tiempo de ejecución, algo especialmente adecuado en un entorno \textit{bare-metal} y \texttt{no\_std}.
+
+Un ejemplo simplificado de este archivo es:
+
+\begin{lstlisting}
+MEMORY
+{
+  FLASH : ORIGIN = 0x08000000, LENGTH = 512K
+  RAM   : ORIGIN = 0x20000000, LENGTH = 96K
+}
+\end{lstlisting}
+
+En este proyecto, la memoria Flash contiene tanto el código ejecutable como los datos constantes del sistema, entre ellos la tabla de muestras de la señal senoidal y la tabla de perfiles de frecuencia. Por otro lado, la RAM se reserva para elementos modificables durante la ejecución, como el índice del perfil activo y el búfer circular utilizado por el DMA para almacenar las muestras procedentes del ADC.
+
+Esta configuración debe coincidir con las características reales del microcontrolador utilizado. Una definición incorrecta del mapa de memoria puede provocar errores de enlazado, desaprovechamiento de memoria disponible o fallos en tiempo de ejecución si el programa accede a regiones no válidas.
+
+
+
+\myparagraph{Código común de arranque y errores en \texttt{src/lib.rs}}
+
+El archivo \texttt{src/lib.rs} contiene parte de la infraestructura común utilizada por los distintos binarios del proyecto. En él se integran elementos como el sistema de logging global, el comportamiento ante pánicos y el tratamiento básico de excepciones.
+
+En aplicaciones Rust convencionales, la biblioteca estándar proporciona mecanismos de gestión de errores, impresión por consola y finalización del programa. En un sistema \textit{no\_std}, estas funcionalidades no existen por defecto, por lo que deben definirse explícitamente.
+
+En este proyecto se emplea \texttt{panic-probe} junto con \texttt{defmt} para poder observar errores durante la ejecución mediante la sonda de depuración. Esto facilita detectar fallos en fases tempranas del desarrollo, especialmente cuando el programa se ejecuta sin pantalla, teclado ni sistema operativo.
+
+\myparagraph{Estructura de binarios de prueba}
+
+Durante el desarrollo se emplearon pruebas independientes para validar cada periférico por separado antes de realizar la integración completa. Esta estrategia permitió reducir el riesgo técnico antes de concentrar la funcionalidad en el firmware principal.
+
+Por ejemplo, se desarrollaron pruebas específicas para:
+
+\begin{itemize}
+    \item Comprobar el entorno mínimo de ejecución y depuración.
+    \item Configurar un pin GPIO como salida.
+    \item Validar la lectura del ADC en el pin PA0.
+    \item Generar una tensión analógica mediante el DAC en PA4.
+    \item Integrar generación y adquisición en un mismo flujo.
+\end{itemize}
+
+Esta organización redujo la complejidad durante la depuración. En lugar de probar directamente todo el sistema completo, cada bloque funcional se verificó de forma incremental. Posteriormente, las partes validadas se integraron en el binario principal \texttt{main.rs}.
+
+\myparagraph{Depuración con \texttt{defmt} y \texttt{probe-rs}}
+
+La depuración de firmware embebido presenta dificultades adicionales respecto al software convencional, ya que no existe una salida estándar por consola. Para resolver este problema se utilizó \texttt{defmt}, un sistema de logging diseñado específicamente para microcontroladores.
+
+Las trazas generadas por el firmware se transmiten mediante RTT y son recogidas en el ordenador de desarrollo a través de \texttt{probe-rs}. Esto permite observar mensajes de estado, valores leídos del ADC, avisos de desviación y eventos relevantes del sistema sin necesidad de implementar inicialmente una comunicación UART propia.
+
+Este mecanismo resultó especialmente útil durante la fase de pruebas, ya que permitió comprobar si los periféricos estaban siendo inicializados correctamente y si el buffer de muestras del ADC recibía datos durante la ejecución.
+
+\myparagraph{Importancia de la infraestructura en el proyecto}
+
+La infraestructura descrita no constituye un elemento auxiliar, sino una parte fundamental del proyecto. Sin ella, el código Rust no podría ejecutarse correctamente sobre el STM32G474RE. La configuración de compilación cruzada, el mapa de memoria, el sistema de arranque, los perfiles de optimización, la carga mediante \texttt{probe-rs} y la depuración mediante \texttt{defmt} forman la base sobre la que se construye el firmware de generación y adquisición de señal.
+
+Por tanto, el desarrollo del sistema no se limitó únicamente a programar los periféricos ADC, DAC, DMA y TIM6, sino que también incluyó la creación de un entorno completo de desarrollo embebido en Rust, reproducible y adaptado a la placa utilizada.
+
+\subsubsection{Instrumentación de laboratorio}
+
+Para la validación del sistema y el análisis de las señales generadas y adquiridas, se empleó una \textbf{Analog Discovery 3} de Digilent proporcionada por el departamento. Este equipo permitió observar en tiempo real tanto la señal senoidal generada por el convertidor digital--analógico (DAC) como la señal capturada mediante el convertidor analógico--digital (ADC), facilitando la verificación del correcto funcionamiento del sistema.
+
+Durante el desarrollo se utilizaron las entradas analógicas del equipo y el software WaveForms para visualizar y exportar las señales medidas. La instrumentación se empleó principalmente en las fases de prueba del generador de señal, calibración del sistema de adquisición y verificación del comportamiento bajo carga conocida.
+
+El uso de este instrumento resultó fundamental para comprobar la integridad de la forma de onda generada, detectar posibles distorsiones o errores de sincronización y contrastar experimentalmente las muestras observadas mediante las trazas del firmware.
+
+
+
+\subsubsection{Otros componentes considerados}
+Durante la fase de diseño, se evaluó la posibilidad de utilizar integrados externos para la conversión de señal (DAC/ADC de mayor resolución). Sin embargo, tras analizar las especificaciones del \textbf{STM32G474RE}, se determinó que sus convertidores internos de 12 bits y su alta velocidad de muestreo eran más que suficientes para aplicaciones biomédicas de este rango, cumpliendo así con el requisito \textbf{R1} de maximizar la integración.
+
+\subsection{Análisis de costes estimados}
+
+El desarrollo del presente proyecto implica distintos tipos de costes que van más allá del material estrictamente utilizado. Para ofrecer una visión más realista del esfuerzo necesario en un contexto profesional, se distinguen dos categorías principales: costes de materiales y costes derivados del trabajo de ingeniería. Las cifras presentadas constituyen estimaciones orientativas con fines académicos.
+
+\subsubsection*{Costes de materiales}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|r|}
+        \hline
+        \textbf{Componente} & \textbf{Coste estimado} \\ \hline
+        Tarjeta Nucleo-G474RE & 25.00 € \\ \hline
+        Componentes pasivos y placa perforada & 5.00 € \\ \hline
+        Cableado, conectores y consumibles de laboratorio & 15.00 € \\ \hline
+        Software (Rust, LaTeX, WaveForms y herramientas Open Source) & 0.00 € \\ \hline
+        \textbf{Subtotal materiales} & \textbf{45.00 €} \\ \hline
+    \end{tabular}
+    \caption{Costes asociados a materiales utilizados en el proyecto}
+\end{table}
+
+\subsubsection*{Equipamiento de laboratorio}
+
+La instrumentación utilizada durante las pruebas, en concreto la \textbf{Analog Discovery 3} de Digilent, fue proporcionada por el departamento. Por tanto, no supuso un coste de adquisición para el proyecto y no se incluye dentro del presupuesto estimado.
+
+\subsubsection*{Costes de ingeniería}
+
+El desarrollo del firmware, diseño electrónico, pruebas experimentales, documentación y elaboración de la memoria implicaron una dedicación estimada de 310 horas de trabajo técnico, coherente con la planificación de hitos descrita posteriormente. Para efectos comparativos con un entorno profesional, se considera una tarifa de 30 € por hora.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|r|}
+        \hline
+        \textbf{Concepto} & \textbf{Coste estimado} \\ \hline
+        Trabajo de ingeniería (310 h $\times$ 30 €/h) & 9300.00 € \\ \hline
+        \textbf{Subtotal ingeniería} & \textbf{9300.00 €} \\ \hline
+    \end{tabular}
+    \caption{Estimación del coste de desarrollo técnico}
+\end{table}
+
+
+\bigskip
+
+Considerando el conjunto de categorías anteriores, el coste total estimado del proyecto asciende a:
+
+\begin{center}
+\textbf{Coste total estimado: 9345.00 €}
+\end{center}
+
+
+\subsection{Planificación de hitos}
+
+El proyecto se ha dividido en cinco hitos principales. La planificación parte del día \textbf{2 de marzo de 2026} y finaliza el día \textbf{26 de mayo de 2026}. Se organiza considerando jornadas de trabajo de aproximadamente \textbf{5 horas}, con una dedicación total estimada de \textbf{310 horas}.
+
+La distribución temporal se ha organizado de forma secuencial: primero se reserva un bloque amplio para el aprendizaje de Rust embebido y la configuración del entorno, posteriormente se desarrolla la generación de señal mediante DAC, después la adquisición mediante ADC, y finalmente se realizan las pruebas experimentales con la Analog Discovery 3 antes de la redacción final de la memoria.
+
+\subsubsection{H1 -- Aprendizaje y entorno Rust embebido funcional}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{lXccr}
+\toprule
+\textbf{Código} & \textbf{Tarea} & \textbf{Inicio} & \textbf{Fin} & \textbf{Horas} \\
+\midrule
+T1.1 & Estudio inicial de Rust & 02/03/2026 & 04/03/2026 & 15 \\
+T1.2 & Rust embebido: \textit{no\_std} y \textit{bare-metal} & 05/03/2026 & 09/03/2026 & 15 \\
+T1.3 & Ecosistema: \texttt{cortex-m}, PAC, \texttt{defmt} y \texttt{probe-rs} & 10/03/2026 & 12/03/2026 & 15 \\
+T1.4 & Instalación y configuración de herramientas & 13/03/2026 & 16/03/2026 & 10 \\
+T1.5 & Estructura del proyecto y \texttt{Cargo.toml} & 17/03/2026 & 18/03/2026 & 10 \\
+T1.6 & Mapa de memoria y enlazado & 19/03/2026 & 20/03/2026 & 10 \\
+T1.7 & Primer firmware mínimo & 23/03/2026 & 23/03/2026 & 5 \\
+T1.8 & Depuración con \texttt{defmt} y \texttt{probe-rs} & 24/03/2026 & 24/03/2026 & 5 \\
+\midrule
+\multicolumn{4}{r}{\textbf{Subtotal H1}} & \textbf{85} \\
+\bottomrule
+\end{tabularx}
+\caption{Planificación del hito H1}
+\label{tab:hito1}
+\end{table}
+
+\subsubsection{H2 -- Generación de señal senoidal mediante DAC}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{lXccr}
+\toprule
+\textbf{Código} & \textbf{Tarea} & \textbf{Inicio} & \textbf{Fin} & \textbf{Horas} \\
+\midrule
+T2.1 & Estudio de DAC, TIM6, DMA y DMAMUX & 25/03/2026 & 26/03/2026 & 10 \\
+T2.2 & Configuración de relojes y GPIOA & 27/03/2026 & 27/03/2026 & 5 \\
+T2.3 & Tabla senoidal de 32 muestras & 30/03/2026 & 31/03/2026 & 10 \\
+T2.4 & Configuración de TIM6 como TRGO & 01/04/2026 & 02/04/2026 & 10 \\
+T2.5 & Configuración del DAC & 03/04/2026 & 07/04/2026 & 15 \\
+T2.6 & DMA circular hacia DAC & 08/04/2026 & 09/04/2026 & 10 \\
+T2.7 & Perfiles de frecuencia & 10/04/2026 & 10/04/2026 & 5 \\
+T2.8 & Pruebas preliminares mediante \texttt{defmt} & 13/04/2026 & 13/04/2026 & 5 \\
+\midrule
+\multicolumn{4}{r}{\textbf{Subtotal H2}} & \textbf{70} \\
+\bottomrule
+\end{tabularx}
+\caption{Planificación del hito H2}
+\label{tab:hito2}
+\end{table}
+
+\subsubsection{H3 -- Adquisición de señal mediante ADC}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{lXccr}
+\toprule
+\textbf{Código} & \textbf{Tarea} & \textbf{Inicio} & \textbf{Fin} & \textbf{Horas} \\
+\midrule
+T3.1 & Estudio del ADC y calibración & 14/04/2026 & 15/04/2026 & 10 \\
+T3.2 & Configuración de PA0 y canal ADC & 16/04/2026 & 16/04/2026 & 5 \\
+T3.3 & Reloj, regulador y calibración del ADC & 17/04/2026 & 20/04/2026 & 10 \\
+T3.4 & Disparo externo mediante TIM6 & 21/04/2026 & 22/04/2026 & 10 \\
+T3.5 & DMA circular para búfer ADC & 23/04/2026 & 24/04/2026 & 10 \\
+T3.6 & Integración DAC-ADC-TIM6-DMA & 27/04/2026 & 28/04/2026 & 10 \\
+T3.7 & Lectura del búfer y trazas \texttt{defmt} & 29/04/2026 & 29/04/2026 & 5 \\
+\midrule
+\multicolumn{4}{r}{\textbf{Subtotal H3}} & \textbf{60} \\
+\bottomrule
+\end{tabularx}
+\caption{Planificación del hito H3}
+\label{tab:hito3}
+\end{table}
+
+\subsubsection{H4 -- Validación experimental con Analog Discovery 3}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{lXccr}
+\toprule
+\textbf{Código} & \textbf{Tarea} & \textbf{Inicio} & \textbf{Fin} & \textbf{Horas} \\
+\midrule
+T4.1 & Preparación del entorno de pruebas & 30/04/2026 & 30/04/2026 & 5 \\
+T4.2 & Plan de pruebas experimentales & 01/05/2026 & 01/05/2026 & 5 \\
+T4.3 & Medida de señal DAC con Analog Discovery 3 & 04/05/2026 & 05/05/2026 & 10 \\
+T4.4 & Pruebas con cargas conocidas & 06/05/2026 & 07/05/2026 & 10 \\
+T4.5 & Prueba de estabilidad & 08/05/2026 & 08/05/2026 & 5 \\
+T4.6 & Análisis y capturas de resultados & 11/05/2026 & 12/05/2026 & 10 \\
+\midrule
+\multicolumn{4}{r}{\textbf{Subtotal H4}} & \textbf{45} \\
+\bottomrule
+\end{tabularx}
+\caption{Planificación del hito H4}
+\label{tab:hito4}
+\end{table}
+
+\subsubsection{H5 -- Documentación y cierre del proyecto}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{lXccr}
+\toprule
+\textbf{Código} & \textbf{Tarea} & \textbf{Inicio} & \textbf{Fin} & \textbf{Horas} \\
+\midrule
+T5.1 & Estructura final, resumen e índice & 13/05/2026 & 13/05/2026 & 5 \\
+T5.2 & Introducción, objetivos y descripción & 14/05/2026 & 14/05/2026 & 5 \\
+T5.3 & Estado del arte y fundamentos & 15/05/2026 & 18/05/2026 & 10 \\
+T5.4 & Planificación, requisitos y costes & 19/05/2026 & 20/05/2026 & 10 \\
+T5.5 & Desarrollo técnico y firmware & 21/05/2026 & 21/05/2026 & 5 \\
+T5.6 & Pruebas, resultados y conclusiones & 22/05/2026 & 22/05/2026 & 5 \\
+T5.7 & Bibliografía, anexos y revisión final & 25/05/2026 & 26/05/2026 & 10 \\
+\midrule
+\multicolumn{4}{r}{\textbf{Subtotal H5}} & \textbf{50} \\
+\bottomrule
+\end{tabularx}
+\caption{Planificación del hito H5}
+\label{tab:hito5}
+\end{table}
+
+\subsubsection{Resumen temporal}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lccr}
+\toprule
+\textbf{Hito} & \textbf{Inicio} & \textbf{Fin} & \textbf{Horas} \\
+\midrule
+H1 -- Aprendizaje y entorno Rust embebido & 02/03/2026 & 24/03/2026 & 85 \\
+H2 -- Generación de señal mediante DAC & 25/03/2026 & 13/04/2026 & 70 \\
+H3 -- Adquisición de señal mediante ADC & 14/04/2026 & 29/04/2026 & 60 \\
+H4 -- Validación experimental con Analog Discovery 3 & 30/04/2026 & 12/05/2026 & 45 \\
+H5 -- Documentación y cierre del proyecto & 13/05/2026 & 26/05/2026 & 50 \\
+\midrule
+\textbf{Total} & 02/03/2026 & 26/05/2026 & \textbf{310} \\
+\bottomrule
+\end{tabular}
+\caption{Resumen de la planificación temporal del proyecto}
+\label{tab:resumen_planificacion}
+\end{table}
+
+\clearpage
+\newgeometry{
+    left=0.5cm,
+    right=0.5cm,
+    top=0.7cm,
+    bottom=0.7cm
+}
+
+\begin{landscape}
+\subsubsection{Diagrama de Gantt}
+
+En la Figura~\ref{fig:gantt_hitos} se representa la planificación temporal del proyecto dividida por hitos. El calendario comienza el 2 de marzo de 2026 y finaliza el 26 de mayo de 2026, con una dedicación total estimada de 310 horas.
+
+\begin{figure}[H]
+\centering
+\tiny
+
+\begin{ganttchart}[
+    hgrid,
+    vgrid,
+    time slot format=isodate,
+    x unit=0.22cm,
+    y unit chart=0.30cm,
+    bar height=0.25,
+    group height=0.25,
+    milestone height=0.30,
+    title height=0.65,
+    title label font=\tiny,
+    bar label font=\tiny,
+    group label font=\tiny\bfseries,
+    milestone label font=\tiny\itshape,
+    bar label node/.append style={text width=0.8cm, align=right},
+    group label node/.append style={text width=2.0cm, align=right},
+    bar/.append style={fill=gray!35},
+    group/.append style={fill=gray!60},
+    milestone/.append style={fill=black}
+]{2026-03-02}{2026-05-26}
+
+\gantttitlecalendar{month=name, week} \\
+% ===================== H1 =====================
+\ganttgroup{H1 -- Rust}{2026-03-02}{2026-03-24} \\
+\ganttbar{T1.1}{2026-03-02}{2026-03-04} \\
+\ganttbar{T1.2}{2026-03-05}{2026-03-09} \\
+\ganttbar{T1.3}{2026-03-10}{2026-03-12} \\
+\ganttbar{T1.4}{2026-03-13}{2026-03-16} \\
+\ganttbar{T1.5}{2026-03-17}{2026-03-18} \\
+\ganttbar{T1.6}{2026-03-19}{2026-03-20} \\
+\ganttbar{T1.7}{2026-03-23}{2026-03-23} \\
+\ganttbar{T1.8}{2026-03-24}{2026-03-24} \\
+\ganttmilestone{H1}{2026-03-24} \\
+
+% ===================== H2 =====================
+\ganttgroup{H2 -- DAC}{2026-03-25}{2026-04-13} \\
+\ganttbar{T2.1}{2026-03-25}{2026-03-26} \\
+\ganttbar{T2.2}{2026-03-27}{2026-03-27} \\
+\ganttbar{T2.3}{2026-03-30}{2026-03-31} \\
+\ganttbar{T2.4}{2026-04-01}{2026-04-02} \\
+\ganttbar{T2.5}{2026-04-03}{2026-04-07} \\
+\ganttbar{T2.6}{2026-04-08}{2026-04-09} \\
+\ganttbar{T2.7}{2026-04-10}{2026-04-10} \\
+\ganttbar{T2.8}{2026-04-13}{2026-04-13} \\
+\ganttmilestone{H2}{2026-04-13} \\
+
+% ===================== H3 =====================
+\ganttgroup{H3 -- ADC}{2026-04-14}{2026-04-29} \\
+\ganttbar{T3.1}{2026-04-14}{2026-04-15} \\
+\ganttbar{T3.2}{2026-04-16}{2026-04-16} \\
+\ganttbar{T3.3}{2026-04-17}{2026-04-20} \\
+\ganttbar{T3.4}{2026-04-21}{2026-04-22} \\
+\ganttbar{T3.5}{2026-04-23}{2026-04-24} \\
+\ganttbar{T3.6}{2026-04-27}{2026-04-28} \\
+\ganttbar{T3.7}{2026-04-29}{2026-04-29} \\
+\ganttmilestone{H3}{2026-04-29} \\
+
+% ===================== H4 =====================
+\ganttgroup{H4 -- Pruebas}{2026-04-30}{2026-05-12} \\
+\ganttbar{T4.1}{2026-04-30}{2026-04-30} \\
+\ganttbar{T4.2}{2026-05-01}{2026-05-01} \\
+\ganttbar{T4.3}{2026-05-04}{2026-05-05} \\
+\ganttbar{T4.4}{2026-05-06}{2026-05-07} \\
+\ganttbar{T4.5}{2026-05-08}{2026-05-08} \\
+\ganttbar{T4.6}{2026-05-11}{2026-05-12} \\
+\ganttmilestone{H4}{2026-05-12} \\
+
+% ===================== H5 =====================
+\ganttgroup{H5 -- Doc.}{2026-05-13}{2026-05-26} \\
+\ganttbar{T5.1}{2026-05-13}{2026-05-13} \\
+\ganttbar{T5.2}{2026-05-14}{2026-05-14} \\
+\ganttbar{T5.3}{2026-05-15}{2026-05-18} \\
+\ganttbar{T5.4}{2026-05-19}{2026-05-20} \\
+\ganttbar{T5.5}{2026-05-21}{2026-05-21} \\
+\ganttbar{T5.6}{2026-05-22}{2026-05-22} \\
+\ganttbar{T5.7}{2026-05-25}{2026-05-26} \\
+\ganttmilestone{Entrega}{2026-05-26}
+
+\end{ganttchart}
+
+\caption{Diagrama de Gantt del proyecto dividido por hitos}
+\label{fig:gantt_hitos}
+\end{figure}
+
+\end{landscape}
+\restoregeometry
+\clearpage
+
+\section{Desarrollo del proyecto}
+
+\subsection{Fundamentos del Sistema Microcontrolador}
+El sistema se apoya en una arquitectura de 32 bits. La clave del rendimiento reside en la interconexión de periféricos mediante el bus \textbf{AHB}, permitiendo que el DMA mueva datos entre el DAC/ADC y la memoria RAM sin intervención del núcleo ARM Cortex-M4, liberando a este para tareas de procesamiento de datos.
+
+\subsection{Diseño del sistema}
+
+% ============================================================
+% DIAGRAMA 1: ARQUITECTURA GENERAL DEL SISTEMA
+% ============================================================
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    block/.style={
+        rectangle,
+        draw,
+        rounded corners,
+        align=center,
+        minimum width=3.1cm,
+        minimum height=1.15cm,
+        font=\small
+    },
+    smallblock/.style={
+        rectangle,
+        draw,
+        rounded corners,
+        align=center,
+        minimum width=2.5cm,
+        minimum height=0.95cm,
+        font=\small
+    },
+    arrow/.style={
+        -{Latex[length=3mm]},
+        thick
+    },
+    dashedarrow/.style={
+        -{Latex[length=3mm]},
+        thick,
+        dashed
+    }
+]
+
+% Nodos principales
+\node[block] (flash) {Memoria Flash\\\texttt{TABLA\_SENO}\\\texttt{PERFILES}};
+\node[block, right=2.0cm of flash] (dma_dac) {DMA\\canal DAC};
+\node[block, right=2.0cm of dma_dac] (dac) {DAC1\\PA4\\Salida analógica};
+\node[block, right=2.0cm of dac] (signal) {Señal senoidal\\generada};
+
+\node[block, below=3cm of signal] (adc) {ADC1\\PA0\\Entrada analógica};
+\node[block, left=2.0cm of adc] (dma_adc) {DMA\\canal ADC};
+\node[block, left=2.0cm of dma_adc] (ram) {Memoria RAM\\\texttt{adc\_buffer}\\\texttt{perfil\_actual}};
+
+\node[smallblock, below=1.4cm of dma_dac] (tim6) {TIM6\\TRGO};
+\node[smallblock, below=1.4cm of flash] (button) {Pulsador\\PC13};
+
+% Flechas de datos
+\draw[arrow] (flash) -- node[above, font=\scriptsize]{muestras} (dma_dac);
+\draw[arrow] (dma_dac) -- node[above, font=\scriptsize]{transferencia circular} (dac);
+\draw[arrow] (dac) -- (signal);
+\draw[arrow] (signal) -- node[right, font=\scriptsize]{medición} (adc);
+\draw[arrow] (adc) -- node[above, font=\scriptsize]{muestras ADC} (dma_adc);
+\draw[arrow] (dma_adc) -- node[above, font=\scriptsize]{búfer circular} (ram);
+
+% Flechas de sincronización
+\draw[dashedarrow] (tim6) -- node[right, font=\scriptsize]{disparo} (dma_dac);
+\draw[dashedarrow] (tim6) -- node[right, font=\scriptsize]{trigger} (dac);
+\draw[dashedarrow] (tim6) -- node[right, font=\scriptsize]{trigger} (adc);
+
+% Control con botón
+\draw[dashedarrow] (button) -- node[left, font=\scriptsize]{cambio de perfil} (flash);
+\draw[dashedarrow] (button) -- node[below, font=\scriptsize]{actualiza PSC/ARR} (tim6);
+
+\end{tikzpicture}%
+}
+\caption{Arquitectura general del sistema implementado, mostrando la generación mediante DAC, la adquisición mediante ADC y la sincronización común mediante TIM6.}
+\label{fig:arquitectura-general}
+\end{figure}
+
+
+\subsubsection{Funcionamiento integrado}
+La generación se basa en una técnica de síntesis digital directa (DDS) simplificada. Una tabla de 32 valores define un ciclo completo de la onda, y el DAC se actualiza mediante eventos de disparo generados por \texttt{TIM6}. Por tanto, la frecuencia de salida depende del reloj de TIM6 y de los divisores enteros configurados:
+\[
+f_{out} =
+\frac{f_{TIM6}}
+{(PSC+1)(ARR+1)N_{muestras}}
+\]
+
+El firmware no modifica la configuración global del reloj después del arranque. Las medidas realizadas con el osciloscopio son coherentes con un reloj de TIM6 próximo a \(16~MHz\). Debido a la cuantización introducida por \(PSC\) y \(ARR\), las frecuencias obtenidas no coinciden exactamente con los valores inicialmente utilizados como etiquetas.
+
+El mismo disparo hardware se utiliza para coordinar la adquisición mediante \textbf{ADC1}. En lugar de ejecutar un bucle software que escriba cada muestra en el DAC o lea cada conversión del ADC, el firmware configura los periféricos para que TIM6 marque el ritmo y DMA realice las transferencias de datos. La CPU queda reservada principalmente para la inicialización, la selección de perfiles de frecuencia y la monitorización de las muestras adquiridas.
+
+Los perfiles de frecuencia modifican los valores \texttt{PSC} y \texttt{ARR} de TIM6, permitiendo cambiar la frecuencia de generación y adquisición sin alterar la tabla senoidal ni recompilar el programa.
+
+
+\subsection{Desarrollo del sistema (Fases)}
+
+Las fases F1--F8 describen la evolución técnica seguida durante la implementación y validación del sistema. No sustituyen a los hitos temporales H1--H5 de la planificación, sino que los detallan desde el punto de vista del trabajo realizado: aprendizaje e infraestructura, prototipos de periféricos, integración, selección de perfiles y validación experimental.
+
+\subsubsection{F1: Planteamiento y estudio inicial}
+
+En esta fase se definió el alcance general del proyecto y se realizó un estudio preliminar de su viabilidad técnica. Se analizaron los objetivos principales del trabajo, los requisitos funcionales del sistema y las restricciones impuestas al diseño, tanto a nivel de implementación embebida como de integración hardware.
+También se llevó a cabo una primera evaluación de la familia STM32G4, prestando especial atención a sus capacidades analógicas internas. Este estudio permitió comprobar que el microcontrolador STM32G474RE disponía de periféricos adecuados para el desarrollo del proyecto, como DAC, ADC, temporizadores y DMA. A partir de este análisis se justificó la elección de esta plataforma como base del sistema.
+
+
+\subsubsection{F2: Aprendizaje de Rust embebido e infraestructura}
+
+Durante esta etapa se adquirieron los conocimientos necesarios para el desarrollo de aplicaciones embebidas en Rust. Se estudió el ecosistema \texttt{embedded-hal}, la organización de los paquetes de soporte para microcontroladores STM32 y las herramientas empleadas para la compilación, carga y depuración del firmware.
+Asimismo, se configuró la infraestructura básica de desarrollo, incluyendo el entorno de compilación para arquitecturas ARM Cortex-M, el uso de \texttt{probe-rs} para la programación y depuración del microcontrolador, y la estructura inicial del proyecto en Rust. Esta fase resultó fundamental para establecer una base de trabajo estable sobre la que implementar posteriormente los distintos periféricos.
+Dado que el lenguaje C continúa siendo la opción predominante en el ámbito de los sistemas embebidos, se detectó que el ecosistema Rust para la familia STM32G4 presenta todavía ciertas limitaciones. En particular, algunas capas de abstracción hardware disponibles se encuentran en fases tempranas de desarrollo o no ofrecen soporte completo para todos los periféricos requeridos. Por ello, fue necesario trabajar en algunos casos a un nivel más próximo a los registros del microcontrolador.
+
+
+\subsubsection{F3: Estudio del STM32G474RE y periféricos analógicos}
+
+En esta fase se profundizó en el estudio del microcontrolador STM32G474RE y de los periféricos necesarios para el proyecto: DAC, ADC, DMA y temporizadores. También se estudiaron los registros específicos asociados a cada bloque, ya que el soporte de alto nivel disponible en Rust no cubría completamente todas las funcionalidades necesarias.
+
+Este análisis permitió definir la arquitectura interna del firmware: generación mediante DAC, temporización mediante TIM6, transferencia automática por DMA y adquisición mediante ADC.
+
+
+\subsubsection{F4: Prototipos mínimos de GPIO, DAC y ADC}
+
+Una vez configurado el entorno de desarrollo y estudiados los periféricos principales, se implementaron prototipos mínimos para validar el funcionamiento básico del microcontrolador. Inicialmente se realizaron pruebas con GPIO, con el objetivo de comprobar la correcta compilación, carga y ejecución del firmware sobre la placa de desarrollo.
+Posteriormente, se desarrollaron pruebas independientes para el DAC y el ADC. En el caso del DAC, se verificó la capacidad de generar valores analógicos simples a partir de datos digitales definidos por software. En el caso del ADC, se comprobó la lectura de señales analógicas y se implementó una rutina de calibración inicial para compensar el error de offset interno del chip.
+Estos prototipos permitieron validar de forma incremental cada bloque funcional antes de abordar su integración completa. Además, facilitaron la detección temprana de errores de configuración y permitieron familiarizarse con el acceso a los registros del STM32G474RE desde Rust.
+
+
+\subsubsection{F5: Integración DAC-DMA-TIM6}
+
+En esta fase se integraron el DAC, el controlador DMA y el temporizador TIM6 para implementar la generación automática de señal. Se definió una tabla senoidal en memoria y se configuró el DMA para transferir sus muestras al DAC siguiendo el ritmo marcado por TIM6. Esta etapa permitió pasar de pruebas manuales de salida analógica a una generación periódica y autónoma.
+
+
+\subsubsection{F6: Integración ADC-DMA y lectura de muestras}
+
+Durante esta etapa se configuró el ADC junto con el DMA para realizar la adquisición automática de muestras analógicas. Se ajustó la calibración inicial, el canal de entrada y el modo de conversión, y se configuró un búfer de muestras en memoria para recibir los resultados. Con ello se cerró el ciclo de generación y adquisición dentro del propio microcontrolador.
+
+
+
+\subsubsection{F7: Selección de perfiles de frecuencia mediante pulsador}
+
+Una vez validado el funcionamiento conjunto del DAC, ADC, DMA y TIM6, se incorporó la selección de distintas frecuencias sin recompilar el firmware. Cada perfil almacena los valores de prescaler (\texttt{PSC}) y auto-reload (\texttt{ARR}) de TIM6, y el pulsador de usuario conectado a \texttt{PC13} permite recorrerlos durante la ejecución. Esta ampliación facilita realizar ensayos a distintas frecuencias de excitación manteniendo la sincronización entre generación y adquisición.
+
+
+
+% ============================================================
+% DIAGRAMA 4: CAMBIO DE PERFIL MEDIANTE PULSADOR
+% ============================================================
+
+\begin{figure}[H]
+\centering
+\resizebox{0.72\textwidth}{!}{%
+\begin{tikzpicture}[
+    startstop/.style={
+        ellipse,
+        draw,
+        align=center,
+        minimum width=3.4cm,
+        minimum height=1cm,
+        font=\small
+    },
+    process/.style={
+        rectangle,
+        draw,
+        rounded corners,
+        align=center,
+        minimum width=4.3cm,
+        minimum height=1cm,
+        font=\small
+    },
+    decision/.style={
+        diamond,
+        draw,
+        aspect=2,
+        align=center,
+        inner sep=1pt,
+        minimum width=4.2cm,
+        minimum height=1.3cm,
+        font=\small
+    },
+    arrow/.style={
+        -{Latex[length=3mm]},
+        thick
+    }
+]
+
+\node[startstop] (inicio) {Bucle principal};
+\node[process, below=1.0cm of inicio] (leer) {Leer estado de PC13};
+\node[decision, below=1.1cm of leer] (pulsado) {¿Botón\\pulsado?};
+\node[process, below=1.2cm of pulsado] (incrementar) {\texttt{perfil\_actual =}\\\texttt{perfil\_actual + 1}};
+\node[decision, below=1.1cm of incrementar] (fin) {¿Fin de\\tabla?};
+\node[process, below=1.2cm of fin] (volver) {Volver al perfil 0};
+\node[process, right=3.8cm of fin] (aplicar) {Aplicar perfil\\a TIM6};
+\node[process, above=1.1cm of aplicar] (registros) {Actualizar\\\texttt{PSC} y \texttt{ARR}};
+\node[process, above=1.1cm of registros] (continuar) {Continuar generación\\y adquisición};
+
+% Flujo principal
+\draw[arrow] (inicio) -- (leer);
+\draw[arrow] (leer) -- (pulsado);
+\draw[arrow] (pulsado) -- node[right, font=\scriptsize]{sí} (incrementar);
+\draw[arrow] (incrementar) -- (fin);
+\draw[arrow] (fin) -- node[right, font=\scriptsize]{sí} (volver);
+\draw[arrow] (volver.east) -- ++(1.9,0) |- (aplicar.south);
+\draw[arrow] (fin) -- node[above, font=\scriptsize]{no} (aplicar);
+\draw[arrow] (aplicar) -- (registros);
+\draw[arrow] (registros) -- (continuar);
+
+% Rama no pulsado
+\draw[arrow] (pulsado.west) -- ++(-2.0,0) node[above, font=\scriptsize]{no} |- (continuar.west);
+
+% Retorno al bucle
+\draw[arrow] (continuar.north) -- ++(0,0.75) -| (inicio.east);
+
+\end{tikzpicture}%
+}
+\caption{Flujo de selección cíclica de perfiles de frecuencia mediante el pulsador de usuario conectado a PC13.}
+\label{fig:flujo-cambio-perfil}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{c c c c}
+\toprule
+Perfil & Frecuencia medida & PSC & ARR \\
+\midrule
+0 & 4.72 Hz & 169 & 624 \\
+1 & 9.42 Hz & 169 & 312 \\
+2 & 23.60 Hz & 169 & 124 \\
+3 & 46.83 Hz & 169 & 62 \\
+4 & 95.15 Hz & 169 & 30 \\
+5 & 295.00 Hz & 169 & 9 \\
+6 & 2697.08 Hz & 5 & 30 \\
+7 & 5225.39 Hz & 5 & 15 \\
+8 & 20896.21 Hz & 5 & 3 \\
+9 & 41798.46 Hz & 5 & 1 \\
+\bottomrule
+\end{tabular}
+\caption{Perfiles de frecuencia definidos en el firmware.}
+\label{tab:perfiles-frecuencia}
+\end{table}
+
+El campo entero \texttt{frecuencia\_hz} utilizado en los mensajes de depuración almacena estos valores redondeados al hercio más cercano. Los valores con decimales de la tabla proceden de la estimación realizada sobre las capturas del osciloscopio.
+
+\subsubsection{F8: Validación experimental con carga resistiva-capacitiva}
+
+Finalmente, se llevó a cabo la validación experimental del sistema completo. Para ello, se comparó la señal adquirida por el ADC con la señal observada mediante la \textbf{Analog Discovery 3}, comprobando la coherencia entre ambas medidas y verificando el correcto funcionamiento de la cadena de generación y adquisición.
+
+Para comprobar el comportamiento del sistema ante una carga de impedancia conocida se montó un circuito de prueba formado por tres resistencias de \(10~k\Omega\) y un condensador de \(10~nF\). La resistencia \(R_1\) se conectó entre la entrada \(V_A\) y el punto de medida \(V_B\). Desde \(V_B\) hasta masa se dispusieron dos ramas en paralelo: una formada por \(R_2\) y \(R_3\) en serie, con una resistencia equivalente de \(20~k\Omega\), y otra formada por el condensador. De esta forma se obtuvo una carga con comportamiento dependiente de la frecuencia.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{montaje.jpg}
+    \caption{Montaje experimental utilizado durante las pruebas con la Analog Discovery 3 de Digilent.}
+    \label{fig:montaje-analog-discovery}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm, thick]
+    \draw (0,0) node[left] {\(V_A\)} -- (0.6,0);
+    \draw (0.6,0) -- (0.85,0.25) -- (1.1,-0.25) -- (1.35,0.25) -- (1.6,-0.25) -- (1.85,0.25) -- (2.1,0);
+    \node[above] at (1.35,0.55) {\(R_1=10~k\Omega\)};
+    \draw (2.1,0) -- (2.8,0);
+    \filldraw (2.8,0) circle (1.4pt);
+    \node[above] at (2.8,0.18) {\(V_B\)};
+    \draw (2.8,0) -- (3.05,0.25) -- (3.3,-0.25) -- (3.55,0.25) -- (3.8,-0.25) -- (4.05,0.25) -- (4.3,0);
+    \node[above] at (3.55,0.55) {\(R_2=10~k\Omega\)};
+    \draw (4.3,0) -- (5.0,0);
+    \draw (5.0,0) -- (5.8,0);
+    \draw (5.8,0) -- (6.05,0.25) -- (6.3,-0.25) -- (6.55,0.25) -- (6.8,-0.25) -- (7.05,0.25) -- (7.3,0);
+    \node[above] at (6.55,0.55) {\(R_3=10~k\Omega\)};
+    \draw (7.3,0) -- (8.1,0) -- (8.1,-1.9);
+    \draw (2.8,0) -- (2.8,-1.2) -- (6.15,-1.2);
+    \draw (6.15,-0.75) -- (6.15,-1.65);
+    \draw (6.45,-0.75) -- (6.45,-1.65);
+    \draw (6.45,-1.2) -- (8.1,-1.2);
+    \node[below] at (6.3,-1.65) {\(C=10~nF\)};
+    \draw (8.1,-1.9) -- (7.65,-1.9) -- (8.55,-1.9);
+    \draw (7.78,-2.12) -- (8.42,-2.12);
+    \draw (7.92,-2.34) -- (8.28,-2.34);
+\end{tikzpicture}
+\caption{Circuito de prueba utilizado para las medidas de impedancia.}
+\label{fig:circuito-prueba-rc}
+\end{figure}
+
+\myparagraph{Formas de onda observadas}
+
+Antes de aplicar el modelo eléctrico, se representaron las formas de onda registradas en cada ensayo. En las Figuras~\ref{fig:ondas-medidas-baja}, \ref{fig:ondas-medidas-media} y \ref{fig:ondas-medidas-alta} se muestran dos periodos de los canales \(V_A\) y \(V_B\). Para facilitar la comparación se eliminó únicamente el valor medio de cada canal y se mantuvo una escala vertical común de \(\pm 1.8~V\). Por tanto, las gráficas conservan tanto la relación de amplitudes como el desplazamiento temporal entre ambas señales.
+
+El eje horizontal se expresa en ciclos de la señal y no en segundos, lo que permite comparar en una misma escala capturas realizadas desde décimas de hercio hasta decenas de kilohercios. Sobre cada caso se indican la frecuencia medida, la ganancia \(\lvert V_B/V_A\rvert\) y el desfase calculado a partir de la captura completa.
+
+\input{figures/medidas_ondas_tikz.tex}
+
+Visualmente se aprecia que las señales permanecen prácticamente en fase en la zona de baja frecuencia. En los dos ensayos de mayor frecuencia la amplitud relativa de \(V_B\) disminuye y aparece un retraso de fase más visible. No obstante, el conjunto experimental no presenta una evolución perfectamente monótona: la medida de \(5.23~kHz\) muestra una amplitud y un adelanto de fase anómalos. Por ello, estas formas de onda se presentan como observaciones experimentales y la tendencia se cuantifica posteriormente mediante el análisis fasorial.
+
+\myparagraph{Modelo eléctrico y análisis cuantitativo}
+
+El análisis teórico se realizó considerando \(R_1=10~k\Omega\) como resistencia serie y la asociación \(R_{23}=R_2+R_3=20~k\Omega\) como rama resistiva de la carga. La impedancia equivalente observada desde \(V_B\) es:
+
+\[
+Z_p(f)=\left(\frac{1}{R_{23}}+j2\pi f C\right)^{-1}
+\]
+
+La relación entre la tensión de entrada y la tensión de salida queda definida por el divisor de impedancias:
+
+\[
+H(f)=\frac{V_B}{V_A}=\frac{Z_p(f)}{R_1+Z_p(f)}
+\]
+
+La frecuencia efectiva de cada captura se estimó a partir de los cruces ascendentes por el valor medio del canal de entrada. Este paso evita emplear directamente la frecuencia redondeada indicada en el nombre del archivo, ya que las frecuencias reales dependen de los divisores enteros de TIM6 y del reloj efectivo del microcontrolador. A continuación, se estimó el fasor de cada canal mediante la componente de Fourier evaluada en la frecuencia medida:
+
+\[
+X(f_0)=\frac{2}{N}\sum_{n=0}^{N-1}\left(x[n]-\overline{x}\right)e^{-j2\pi f_0t_n}
+\]
+
+Con los fasores de entrada y salida se calculó \(H=V_B/V_A\). Despejando la ecuación anterior se obtuvo una estimación experimental de la impedancia:
+
+\[
+Z_p(f)=R_1\frac{H(f)}{1-H(f)}
+\]
+
+\begin{table}[H]
+\centering
+\begin{tabular}{r r r r r r}
+\toprule
+\(f_{med}\) (Hz) & \(|H|_{med}\) & \(|H|_{teo}\) & \(|Z|_{med}\) (\(\Omega\)) & \(|Z|_{teo}\) (\(\Omega\)) & \(\Delta\phi\) (\(^{\circ}\)) \\
+\midrule
+\input{figures/medidas_tabla.tex}\\
+\bottomrule
+\end{tabular}
+\caption{Comparación entre la respuesta medida mediante Fourier y el modelo ideal del circuito.}
+\label{tab:resultados-medidas-impedancia}
+\end{table}
+
+\input{figures/medidas_resultados_tikz.tex}
+
+Los resultados de baja frecuencia concuerdan con la topología real del montaje. Para \(0.47\) y \(4.72~Hz\), la ganancia medida es aproximadamente \(0.663\), frente a \(0.667\) en el modelo, y la impedancia estimada es de unos \(19.7~k\Omega\), frente a los \(20~k\Omega\) de la rama resistiva. Esta concordancia confirma que la discrepancia obtenida inicialmente procedía de haber situado incorrectamente \(V_B\) en el esquema y, por tanto, de haber utilizado una ecuación de divisor que no representaba el circuito medido.
+
+Entre aproximadamente \(9\) y \(47~Hz\) se observan variaciones de ganancia que no siguen de forma monótona el modelo ideal, aunque a \(95\) y \(295~Hz\) vuelve a existir una concordancia razonable en magnitud. Por encima de este intervalo aumenta la diferencia entre el modelo con \(C=10~nF\) y las medidas. En particular, la captura de \(5.23~kHz\) presenta una ganancia de \(0.862\) y un adelanto de fase de \(21.7^\circ\), comportamiento que no es compatible con la red RC pasiva representada y que debe considerarse una medida anómala hasta repetir el ensayo. Las capturas de mayor frecuencia también muestran una atenuación y un desfase muy inferiores a los previstos para \(10~nF\), por lo que conviene verificar el valor real del condensador, las conexiones, la referencia común de las sondas y los límites de actualización y adquisición del DAC y del ADC.
+
+\subsection{Seguimiento de la planificación}
+A pesar de la curva de aprendizaje asociada al uso de Rust en sistemas embebidos, el empleo de \texttt{defmt} y \texttt{probe-rs} permitió agilizar notablemente la depuración del firmware. Frente a una estrategia basada en UART, esta solución evitó dedicar un periférico adicional exclusivamente a la depuración y redujo la cantidad de código necesario para obtener información durante la ejecución. Esto facilitó la validación incremental de los periféricos DAC, ADC, DMA y TIM6, permitiendo detectar errores de configuración de forma más rápida y mantener una implementación más ligera y centrada en el funcionamiento principal del sistema.
+
+\subsection{Plan de pruebas}
+Se realizaron tres pruebas principales:
+\begin{enumerate}
+    \item \textbf{Prueba de calidad de señal:} Comprobar la estabilidad de frecuencia y observar la distorsión de la señal generada por el DAC.
+    \item \textbf{Prueba de carga:} Medir la respuesta con una resistencia de carga conocida.
+    \item \textbf{Prueba de estrés:} Funcionamiento continuo durante 2 horas para verificar estabilidad del DMA.
+\end{enumerate}
+
+\section{Cierre del documento}
+
+\subsection{Conclusiones}
+
+Tras la finalización del presente Trabajo de Fin de Grado, se puede concluir que se han cumplido los objetivos principales de desarrollo de un prototipo embebido para generación y adquisición sincronizada de señales sobre la plataforma \textbf{STM32G474RE}. La validación con una carga conocida ha permitido comprobar la coherencia del modelo a baja frecuencia y, al mismo tiempo, identificar limitaciones experimentales que deben resolverse antes de considerar el sistema un instrumento de medida de impedancia calibrado.
+
+A continuación, se detallan las conclusiones principales derivadas del desarrollo:
+
+\begin{itemize}
+    \item \textbf{Eficacia de la instrumentación integrada:} Las capacidades analógicas del microcontrolador han permitido implementar un demostrador funcional de generación y adquisición con un número reducido de componentes externos. Las medidas de baja frecuencia sobre la carga resistiva-capacitiva concuerdan con el modelo corregido. No obstante, la caracterización cuantitativa a frecuencias elevadas requiere repetir medidas, verificar el valor y conexión de los componentes y estudiar los límites temporales del DAC y del ADC.
+    
+    \item \textbf{Robustez del ecosistema Rust:} La implementación del firmware en Rust ha aportado garantías útiles en un entorno sin sistema operativo. La gestión de periféricos de bajo nivel mediante el modelo de \textit{ownership} y el uso de herramientas como \texttt{probe-rs} han facilitado la depuración y el control del flujo de ejecución. El uso de \texttt{no\_std} ha permitido mantener un control directo sobre los recursos del sistema.
+
+    \item \textbf{Rendimiento del hardware:} El uso de \textbf{DMA} sincronizado con temporizadores ha permitido reducir la intervención de la CPU durante la generación y la adquisición de muestras. La frecuencia efectiva de cada perfil queda determinada por el reloj de TIM6 y por los valores enteros de \texttt{PSC} y \texttt{ARR}; por ello se contrastaron las frecuencias mediante osciloscopio y se corrigieron las etiquetas empleadas por el firmware.
+
+    \item \textbf{Versatilidad del prototipo:} La integración de generación, adquisición y monitorización en una única placa de desarrollo demuestra la viabilidad de continuar el trabajo hacia versiones más compactas, incluyendo una futura PCB dedicada o integraciones en dispositivos de monitorización biomédica.
+\end{itemize}
+
+Como balance final, el proyecto ha permitido construir y validar parcialmente una plataforma experimental de generación y adquisición, además de explorar el uso de Rust en programación embebida de bajo nivel. El prototipo constituye una base útil para continuar hacia un sistema de medida calibrado, incorporando una metodología experimental más completa, acondicionamiento analógico y validación frente a instrumentación de referencia.
+
+\subsection{Galería de figuras}
+
+\listoffigures
+
+\newpage
+\bibliographystyle{ieeetr} % Estilo estándar de ingeniería
+\addcontentsline{toc}{section}{Bibliografía} % Para que salga en el índice
+\nocite{*}
+\bibliography{bibliografia} % Asegúrate de que el archivo se llame bibliografia.bib
+\newpage
+\appendix
+\section{Anexos}
+\subsection{Implementación del Firmware en Rust}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.25\textwidth]{ferris.png}
+    \caption{Ferris, mascota no oficial asociada al ecosistema Rust.}
+    \label{fig:ferris}
+\end{figure}
+
+En estos anexos se detalla el código fuente principal desarrollado para el microcontrolador \textbf{STM32G474RE}, así como otros detalles técnicos. La implementación destaca por el uso de abstracciones de coste cero y por la seguridad de memoria proporcionada por el compilador de Rust \cite{rustbook}.
+
+\subsection{Configuración de Periféricos y Bucle Principal}
+
+El firmware principal desarrollado para el microcontrolador \textbf{STM32G474RE} se encarga de inicializar los periféricos necesarios para la generación y adquisición de señales analógicas. La implementación se realiza en Rust en un entorno \textit{bare-metal}, sin sistema operativo ni biblioteca estándar, accediendo directamente a los registros del microcontrolador mediante la capa PAC proporcionada por la familia \texttt{stm32g4}.
+
+El objetivo de esta configuración es coordinar varios periféricos internos del microcontrolador para generar una señal senoidal mediante el \textbf{DAC}, adquirir la señal resultante mediante el \textbf{ADC} y automatizar ambas operaciones mediante \textbf{DMA}. Para garantizar una temporización estable, se utiliza el temporizador \textbf{TIM6} como fuente de eventos de disparo.
+
+\myparagraph{Inicialización del sistema}
+
+Al comienzo del programa se obtiene el acceso a los periféricos del microcontrolador mediante:
+
+\begin{lstlisting}[language=Rust, caption=Código principal main.rs para adquisición biomédica.]
+#![no_std]
+#![no_main]
+
+use cortex_m::singleton;
+use cortex_m_rt::entry;
+use defmt_rtt as _;
+use panic_probe as _;
+use stm32g4::stm32g474::{self, gpioc};
+
+struct PerfilFrecuencia {
+    frecuencia_hz: u32,
+    psc: u16,
+    arr: u32,
+}
+
+type GpioC = stm32g4::Periph<gpioc::RegisterBlock, 1207961600>;
+
+const N_MUESTRAS: usize = 32;
+const PERFIL_INICIAL: usize = 2;
+
+const TIM6_PSC_INICIAL: u16 = 169;
+const TIM6_ARR_INICIAL: u32 = 100;
+const TIM6_TRGO_UPDATE: u8 = 0b010;
+
+const DAC_VALOR_MEDIO: u32 = 2048;
+
+const DMA_CH_ADC: usize = 0;
+const DMA_CH_DAC: usize = 2;
+const DMA_MEMORIA_16_BITS: u8 = 0b01;
+const DMA_PERIFERICO_32_BITS: u8 = 0b10;
+const DMA_PRIORIDAD_ALTA: u8 = 0b10;
+const DMAMUX_REQ_ADC12: u8 = 5;
+const DMAMUX_REQ_DAC1_CH1: u8 = 6;
+
+const ADC_CANAL_PA0: u8 = 1;
+const ADC_CKMODE_PCLK_DIV2: u8 = 0b01;
+const ADC_SAMPLING_MODERADO: u8 = 0b010;
+const DELAY_ADC_REGULADOR: u32 = 30_000;
+const DELAY_ADC_CALIBRACION: u32 = 20_000;
+
+const DELAY_BUCLE_PRINCIPAL: u32 = 1_000_000;
+
+const TABLA_SENO: [u16; N_MUESTRAS] = [
+    2048, 2447, 2831, 3185, 3495, 3750, 3939, 4056, 4095, 4056, 3939, 3750, 3495,
+    3185, 2831, 2447, 2048, 1649, 1265, 911, 601, 346, 157, 40, 0, 40, 157, 346,
+    601, 911, 1265, 1649,
+];
+
+// Frecuencias redondeadas a partir de las lecturas del osciloscopio.
+const PERFILES: [PerfilFrecuencia; 10] = [
+    PerfilFrecuencia { frecuencia_hz: 5,     psc: 169, arr: 624, },
+    PerfilFrecuencia { frecuencia_hz: 9,     psc: 169, arr: 312, },
+    PerfilFrecuencia { frecuencia_hz: 24,    psc: 169, arr: 124, },
+    PerfilFrecuencia { frecuencia_hz: 47,    psc: 169, arr: 62, },
+    PerfilFrecuencia { frecuencia_hz: 95,    psc: 169, arr: 30, },
+    PerfilFrecuencia { frecuencia_hz: 295,   psc: 169, arr: 9, },
+    PerfilFrecuencia { frecuencia_hz: 2697,  psc: 5, arr: 30, },
+    PerfilFrecuencia { frecuencia_hz: 5225,  psc: 5, arr: 15, },
+    PerfilFrecuencia { frecuencia_hz: 20896, psc: 5, arr: 3, },
+    PerfilFrecuencia { frecuencia_hz: 41798, psc: 5, arr: 1, },
+];
+
+
+fn habilitar_relojes(rcc: &stm32g474::RCC) {
+    rcc.ahb1enr().modify(|_, w| {
+        w.dma1en().set_bit();
+        w.dmamux1en().set_bit();
+        w
+    });
+
+    rcc.ahb2enr().modify(|_, w| {
+        w.dac1en().set_bit();
+        w.gpioaen().set_bit();
+        w.adc12en().set_bit();
+        w.gpiocen().set_bit();
+        w
+    });
+
+    rcc.apb1enr1().modify(|_, w| {
+        w.tim6en().set_bit();
+        w
+    });
+}
+
+fn configurar_gpioa(gpioa: &stm32g474::GPIOA) {
+    gpioa.moder().modify(|_, w| {
+        w.moder4().analog(); // DAC1_OUT1 (PA4)
+        w.moder0().analog(); // ADC1_IN1 (PA0)
+        w
+    });
+}
+
+fn configurar_boton(gpioc: &GpioC) {
+    gpioc.moder().modify(|_, w| {
+        w.moder13().input();
+        w
+    });
+}
+
+fn configurar_tim6(tim6: &stm32g474::TIM6) {
+    unsafe {
+        tim6.psc().write(|w| w.psc().bits(TIM6_PSC_INICIAL));
+        tim6.arr().write(|w| w.arr().bits(TIM6_ARR_INICIAL));
+        tim6
+            .cr2()
+            .modify(|_, w| w.mms().bits(TIM6_TRGO_UPDATE));
+        tim6.dier().modify(|_, w| w.ude().set_bit());
+        tim6.cr1().modify(|_, w| w.cen().set_bit());
+    }
+}
+
+fn aplicar_perfil_frecuencia(tim6: &stm32g474::TIM6, perfil: &PerfilFrecuencia) {
+    unsafe {
+        tim6.cr1().modify(|_, w| w.cen().clear_bit());
+        tim6.psc().write(|w| w.psc().bits(perfil.psc));
+        tim6.arr().write(|w| w.arr().bits(perfil.arr));
+        tim6.cnt().write(|w| w.cnt().bits(0));
+        tim6.egr().write(|w| w.ug().set_bit());
+        tim6
+            .cr2()
+            .modify(|_, w| w.mms().bits(TIM6_TRGO_UPDATE));
+        tim6.cr1().modify(|_, w| w.cen().set_bit());
+    }
+}
+
+fn configurar_dac(dac: &stm32g474::DAC1) {
+    unsafe {
+        dac.dhr12r1().write(|w| w.bits(DAC_VALOR_MEDIO));
+        dac.cr().modify(|_, w| {
+            w.en1().set_bit();
+            w.ten1().set_bit();
+            w.dmaen1().set_bit();
+            w.tsel1().tim6trgo();
+            w
+        });
+    }
+}
+
+fn configurar_dma_dac(dma1: &stm32g474::DMA1, dac: &stm32g474::DAC1) {
+    let dac_dhr12_addr = dac.dhr12r1().as_ptr() as u32;
+
+    unsafe {
+        dma1.ch(DMA_CH_DAC).cr().modify(|_, w| w.en().clear_bit());
+        dma1
+            .ch(DMA_CH_DAC)
+            .par()
+            .write(|w| w.pa().bits(dac_dhr12_addr));
+        dma1
+            .ch(DMA_CH_DAC)
+            .mar()
+            .write(|w| w.ma().bits(TABLA_SENO.as_ptr() as u32));
+        dma1
+            .ch(DMA_CH_DAC)
+            .ndtr()
+            .write(|w| w.ndt().bits(N_MUESTRAS as u16));
+
+        dma1.ch(DMA_CH_DAC).cr().modify(|_, w| {
+            w.minc().set_bit();
+            w.circ().set_bit();
+            w.dir().set_bit();
+            w.msize().bits(DMA_MEMORIA_16_BITS);
+            w.psize().bits(DMA_PERIFERICO_32_BITS);
+            w.pl().bits(DMA_PRIORIDAD_ALTA);
+            w.en().set_bit();
+            w
+        });
+    }
+}
+
+fn configurar_dmamux(dmamux: &stm32g474::DMAMUX) {
+    unsafe {
+        dmamux.ccr(DMA_CH_ADC).modify(|_, w| {
+            w.dmareq_id().bits(DMAMUX_REQ_ADC12);
+            w
+        });
+
+        dmamux.ccr(DMA_CH_DAC).modify(|_, w| {
+            w.dmareq_id().bits(DMAMUX_REQ_DAC1_CH1);
+            w
+        });
+    }
+}
+
+fn configurar_adc(adc: &stm32g474::ADC1, adc_common: &stm32g474::ADC12_COMMON) {
+    unsafe {
+        adc_common
+            .ccr()
+            .modify(|_, w| w.ckmode().bits(ADC_CKMODE_PCLK_DIV2));
+    }
+
+    if adc.cr().read().aden().bit_is_set() {
+        adc.cr().modify(|_, w| w.addis().set_bit());
+        while adc.cr().read().aden().bit_is_set() {}
+    }
+
+    adc.cr().modify(|_, w| w.deeppwd().clear_bit());
+    adc.cr().modify(|_, w| w.advregen().set_bit());
+    cortex_m::asm::delay(DELAY_ADC_REGULADOR);
+
+    adc.cr().modify(|_, w| w.adcal().set_bit());
+    while adc.cr().read().adcal().bit_is_set() {}
+    cortex_m::asm::delay(DELAY_ADC_CALIBRACION);
+
+    adc.sqr1().modify(|_, w| unsafe {
+        w.l().bits(0);
+        w.sq1().bits(ADC_CANAL_PA0)
+    });
+
+    unsafe {
+        adc.smpr1().modify(|_, w| {
+            w.smp1().bits(ADC_SAMPLING_MODERADO);
+            w
+        });
+    }
+
+    adc.cfgr().modify(|_, w| {
+        w.cont().clear_bit();
+        w.dmaen().set_bit();
+        w.dmacfg().set_bit();
+        w.extsel().tim6_trgo();
+        w.exten().rising_edge();
+        w
+    });
+
+    adc.isr().write(|w| w.adrdy().clear());
+    adc.cr().modify(|_, w| w.aden().set_bit());
+}
+
+fn configurar_dma_adc(
+    dma1: &stm32g474::DMA1,
+    adc: &stm32g474::ADC1,
+    adc_buffer: &[u16; N_MUESTRAS],
+) {
+    let adc_dr_addr = adc.dr().as_ptr() as u32;
+
+    unsafe {
+        dma1.ch(DMA_CH_ADC).cr().modify(|_, w| w.en().clear_bit());
+        dma1
+            .ch(DMA_CH_ADC)
+            .par()
+            .write(|w| w.pa().bits(adc_dr_addr));
+        dma1
+            .ch(DMA_CH_ADC)
+            .mar()
+            .write(|w| w.ma().bits(adc_buffer.as_ptr() as u32));
+        dma1
+            .ch(DMA_CH_ADC)
+            .ndtr()
+            .write(|w| w.ndt().bits(N_MUESTRAS as u16));
+
+        dma1.ch(DMA_CH_ADC).cr().modify(|_, w| {
+            w.minc().set_bit();
+            w.circ().set_bit();
+            w.dir().clear_bit();
+            w.msize().bits(DMA_MEMORIA_16_BITS);
+            w.psize().bits(DMA_PERIFERICO_32_BITS);
+            w.pl().bits(DMA_PRIORIDAD_ALTA);
+            w.en().set_bit();
+            w
+        });
+    }
+}
+
+fn arrancar_adc(adc: &stm32g474::ADC1) {
+    adc.cr().modify(|_, w| w.adstart().set_bit());
+}
+
+fn leer_buffer_adc(adc_buffer: &[u16; N_MUESTRAS]) -> &[u16] {
+    unsafe { core::slice::from_raw_parts(adc_buffer.as_ptr(), N_MUESTRAS) }
+}
+
+#[entry]
+fn main() -> ! {
+    defmt::println!("Iniciando STM32G474...");
+    let dp = stm32g474::Peripherals::take().unwrap();
+
+    // Se aplica el perfil inicial antes de arrancar la generación sincronizada.
+    let mut perfil_actual = PERFIL_INICIAL;
+
+    let rcc = dp.RCC;
+    habilitar_relojes(&rcc);
+
+    let gpioa = dp.GPIOA;
+    configurar_gpioa(&gpioa);
+
+    let tim6 = dp.TIM6;
+    configurar_tim6(&tim6);
+    aplicar_perfil_frecuencia(&tim6, &PERFILES[perfil_actual]);
+
+    let dac = dp.DAC1;
+    configurar_dac(&dac);
+
+    let dma1 = dp.DMA1;
+    configurar_dma_dac(&dma1, &dac);
+
+    let dmamux = dp.DMAMUX;
+    configurar_dmamux(&dmamux);
+
+    let adc = dp.ADC1;
+    let adc_common = dp.ADC12_COMMON;
+    configurar_adc(&adc, &adc_common);
+
+    let adc_buffer = singleton!(: [u16; N_MUESTRAS] = [0; N_MUESTRAS]).unwrap();
+    configurar_dma_adc(&dma1, &adc, adc_buffer);
+
+    let gpioc: GpioC = dp.GPIOC;
+    configurar_boton(&gpioc);
+
+    arrancar_adc(&adc);
+    defmt::println!("ADC en marcha");
+
+    loop {
+        cortex_m::asm::delay(DELAY_BUCLE_PRINCIPAL);
+
+        let boton_pulsado = gpioc.idr().read().idr13().bit_is_set();
+
+        if boton_pulsado {
+            perfil_actual = (perfil_actual + 1) % PERFILES.len();
+            aplicar_perfil_frecuencia(&tim6, &PERFILES[perfil_actual]);
+        }
+
+        let lectura_adc = leer_buffer_adc(adc_buffer);
+        defmt::println!(
+            "Frecuencia {:?}Hz: {:?}",
+            PERFILES[perfil_actual].frecuencia_hz,
+            lectura_adc
+        );
+    }
+}
+\end{lstlisting}
+
+
+\subsection{Gestión de perfiles de frecuencia y pulsador de usuario}
+
+El listado anterior incluye la gestión completa de perfiles de frecuencia. Cada perfil almacena la frecuencia nominal y los valores \texttt{PSC}/\texttt{ARR} aplicados a TIM6. La tabla de perfiles se declara como constante, por lo que queda ubicada junto al resto de datos inmutables del firmware y puede consultarse sin asignación dinámica.
+
+El pulsador de usuario conectado a \texttt{PC13} permite avanzar de forma circular por la tabla de perfiles. Al seleccionar un nuevo perfil, el firmware detiene temporalmente TIM6, actualiza sus registros de temporización, reinicia el contador y genera un evento de actualización. Como DAC y ADC dependen del mismo disparo hardware, el cambio de frecuencia mantiene la sincronización entre generación y adquisición.
+
+
+\subsection{Detalles de la Síntesis Digital Directa (DDS)}
+La señal senoidal se genera mediante una transferencia circular por \textbf{DMA}\cite{stmanual}. La tabla contiene 32 muestras por periodo, por lo que la frecuencia de salida depende del reloj de TIM6 y de los registros de prescaler y auto-recarga:
+
+\[
+f_{out} =
+\frac{f_{TIM6}}
+{(PSC+1)(ARR+1)N_{muestras}}
+\]
+
+La ventaja de este enfoque es que la forma de onda permanece definida por una única tabla, mientras que la frecuencia se modifica actuando únicamente sobre TIM6. Así se evita recalcular muestras durante la ejecución y se mantiene una carga reducida sobre la CPU.
+
+\subsection{Uso de inteligencia artificial generativa}
+
+Durante el desarrollo de este Trabajo de Fin de Grado se ha utilizado inteligencia artificial generativa como herramienta de apoyo, principalmente en tareas auxiliares relacionadas con la organización, revisión y mejora del material elaborado. Su uso se ha limitado a aspectos formales y de apoyo, sin delegar en ella el diseño técnico ni la implementación funcional del firmware.
+
+En concreto, la inteligencia artificial generativa se ha empleado para mejorar la redacción de determinados apartados de la memoria, ordenar explicaciones técnicas, revisar la coherencia del texto y proponer formas más claras de estructurar algunos contenidos. También se ha utilizado como apoyo para ordenar fragmentos de código, mejorar la legibilidad de ciertos bloques y renombrar variables o funciones con nombres más descriptivos y coherentes con la finalidad de cada elemento.
+
+Sin embargo, no se ha utilizado inteligencia artificial generativa para crear el código funcional del proyecto. Esta decisión se debe a las características específicas del trabajo desarrollado. Aunque existe una gran cantidad de información disponible sobre programación embebida en microcontroladores STM32, la documentación y los ejemplos específicos que combinan STM32 con Rust embebido son mucho más limitados. Como consecuencia, las herramientas de IA generativa tienden a producir respuestas aparentemente correctas, pero con errores técnicos importantes, uso incorrecto de registros, llamadas inexistentes a APIs, configuraciones incompatibles con el microcontrolador o soluciones que no compilan en un entorno \texttt{no\_std}.
+
+Durante las pruebas realizadas con este tipo de herramientas se observó que, en el contexto concreto de Rust embebido sobre STM32, era frecuente la aparición de respuestas erróneas o alucinadas. Por ejemplo, la IA podía mezclar conceptos procedentes de bibliotecas de alto nivel, ejemplos en C basados en HAL, APIs de otros microcontroladores o configuraciones que no correspondían al dispositivo empleado. Este comportamiento hacía que el código generado no fuese fiable como base de implementación.
+
+Por este motivo, la implementación del firmware se realizó manualmente, consultando la documentación técnica del microcontrolador, los registros de los periféricos y el comportamiento esperado del sistema. La IA generativa se mantuvo como una herramienta de apoyo para mejorar la presentación, la claridad y la organización del trabajo, pero no como fuente principal para el desarrollo del código ni para la toma de decisiones técnicas críticas.
+
+De esta forma, el uso de inteligencia artificial generativa en el proyecto puede considerarse equivalente a una herramienta de asistencia en la edición y revisión del documento, pero no como un sustituto del proceso de diseño, programación, validación y depuración realizado durante el desarrollo del sistema.
+
+
+\end{document}

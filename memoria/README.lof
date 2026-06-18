@@ -1,0 +1,17 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {figure}{\numberline {1}{\ignorespaces Diagrama conceptual del sistema}}{5}{figure.1}%
+\contentsline {figure}{\numberline {2}{\ignorespaces Representación fasorial de la impedancia compleja}}{8}{figure.2}%
+\contentsline {figure}{\numberline {3}{\ignorespaces Sincronización entre TIM6, DAC, ADC y DMA. Cada evento de actualización de TIM6 genera el disparo que actualiza el DAC y lanza una conversión del ADC.}}{10}{figure.3}%
+\contentsline {figure}{\numberline {4}{\ignorespaces Microcontrolador STM32G474RE empleado en el desarrollo del sistema}}{12}{figure.4}%
+\contentsline {figure}{\numberline {5}{\ignorespaces Logotipo del lenguaje Rust.}}{12}{figure.5}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Distribución conceptual de los elementos principales del firmware entre memoria Flash y RAM.}}{15}{figure.6}%
+\contentsline {figure}{\numberline {7}{\ignorespaces Salida por consola durante la ejecución del firmware, mostrando la frecuencia activa y las muestras adquiridas por el ADC.}}{16}{figure.7}%
+\contentsline {figure}{\numberline {8}{\ignorespaces Diagrama de Gantt del proyecto dividido por hitos}}{22}{figure.8}%
+\contentsline {figure}{\numberline {9}{\ignorespaces Arquitectura general del sistema implementado, mostrando la generación mediante DAC, la adquisición mediante ADC y la sincronización común mediante TIM6.}}{23}{figure.9}%
+\contentsline {figure}{\numberline {10}{\ignorespaces Flujo de selección cíclica de perfiles de frecuencia mediante el pulsador de usuario conectado a PC13.}}{25}{figure.10}%
+\contentsline {figure}{\numberline {11}{\ignorespaces Montaje experimental utilizado durante las pruebas con la Analog Discovery 3 de Digilent.}}{26}{figure.11}%
+\contentsline {figure}{\numberline {12}{\ignorespaces Circuito de prueba utilizado para las medidas de impedancia.}}{27}{figure.12}%
+\contentsline {figure}{\numberline {13}{\ignorespaces Formas de onda medidas a baja frecuencia. Se representan las componentes alternas de \(V_A\) y \(V_B\) durante dos periodos, manteniendo la misma escala vertical.}}{27}{figure.13}%
+\contentsline {figure}{\numberline {14}{\ignorespaces Formas de onda medidas a frecuencias intermedias. La escala comÃºn permite comparar directamente la amplitud de entrada y salida.}}{28}{figure.14}%
+\contentsline {figure}{\numberline {15}{\ignorespaces Formas de onda medidas a las frecuencias mÃ¡s elevadas. La captura de \(5.23~kHz\) presenta un comportamiento anÃ³malo respecto al resto del barrido.}}{28}{figure.15}%
+\contentsline {figure}{\numberline {16}{\ignorespaces Ferris, mascota no oficial asociada al ecosistema Rust.}}{34}{figure.16}%
