@@ -1298,7 +1298,7 @@ El campo entero \texttt{frecuencia\_hz} utilizado en los mensajes de depuración
 
 Finalmente, se llevó a cabo la validación experimental del sistema completo. Para ello, se comparó la señal adquirida por el ADC con la señal observada mediante la \textbf{Analog Discovery 3}, comprobando la coherencia entre ambas medidas y verificando el correcto funcionamiento de la cadena de generación y adquisición.
 
-Para comprobar el comportamiento del sistema ante una carga de impedancia conocida se montó un circuito de prueba formado por tres resistencias de \(10~k\Omega\) y un condensador de \(10~nF\). La resistencia \(R_1\) se conectó entre la entrada \(V_A\) y el punto de medida \(V_B\). Desde \(V_B\) hasta masa se dispusieron dos ramas en paralelo: una formada por \(R_2\) y \(R_3\) en serie, con una resistencia equivalente de \(20~k\Omega\), y otra formada por el condensador. De esta forma se obtuvo una carga con comportamiento dependiente de la frecuencia.
+Para comprobar el comportamiento del sistema ante una carga de impedancia conocida se montó un circuito de prueba formado por tres resistencias de \(10~k\Omega\) y un condensador de \(10~nF\). La resistencia \(R_1\) se conectó entre la entrada \(V_A\) y el punto de medida \(V_B\). A continuación se conectó \(R_2\) en serie y el terminal superior del condensador se cableó directamente al nodo situado entre \(R_2\) y \(R_3\); su otro terminal se conectó a masa. Por tanto, \(R_3\) y \(C\) comparten ambos nodos y forman una asociación en paralelo, situada en serie con \(R_2\).
 
 \begin{figure}[H]
     \centering
@@ -1319,18 +1319,20 @@ Para comprobar el comportamiento del sistema ante una carga de impedancia conoci
     \draw (2.8,0) -- (3.05,0.25) -- (3.3,-0.25) -- (3.55,0.25) -- (3.8,-0.25) -- (4.05,0.25) -- (4.3,0);
     \node[above] at (3.55,0.55) {\(R_2=10~k\Omega\)};
     \draw (4.3,0) -- (5.0,0);
+    \filldraw (5.0,0) circle (1.4pt);
     \draw (5.0,0) -- (5.8,0);
     \draw (5.8,0) -- (6.05,0.25) -- (6.3,-0.25) -- (6.55,0.25) -- (6.8,-0.25) -- (7.05,0.25) -- (7.3,0);
     \node[above] at (6.55,0.55) {\(R_3=10~k\Omega\)};
-    \draw (7.3,0) -- (8.1,0) -- (8.1,-1.9);
-    \draw (2.8,0) -- (2.8,-1.2) -- (6.15,-1.2);
-    \draw (6.15,-0.75) -- (6.15,-1.65);
-    \draw (6.45,-0.75) -- (6.45,-1.65);
-    \draw (6.45,-1.2) -- (8.1,-1.2);
-    \node[below] at (6.3,-1.65) {\(C=10~nF\)};
-    \draw (8.1,-1.9) -- (7.65,-1.9) -- (8.55,-1.9);
-    \draw (7.78,-2.12) -- (8.42,-2.12);
-    \draw (7.92,-2.34) -- (8.28,-2.34);
+    \draw (7.3,0) -- (7.8,0) -- (7.8,-1.9) -- (5.0,-1.9);
+    \draw (5.0,0) -- (5.0,-0.75);
+    \draw (4.65,-0.75) -- (5.35,-0.75);
+    \draw (4.65,-1.05) -- (5.35,-1.05);
+    \draw (5.0,-1.05) -- (5.0,-1.9);
+    \node[right] at (5.35,-0.9) {\(C=10~nF\)};
+    \draw (6.4,-1.9) -- (6.4,-2.15);
+    \draw (5.95,-2.15) -- (6.85,-2.15);
+    \draw (6.08,-2.37) -- (6.72,-2.37);
+    \draw (6.22,-2.59) -- (6.58,-2.59);
 \end{tikzpicture}
 \caption{Circuito de prueba utilizado para las medidas de impedancia.}
 \label{fig:circuito-prueba-rc}
@@ -1348,16 +1350,38 @@ Visualmente se aprecia que las señales permanecen prácticamente en fase en la 
 
 \myparagraph{Modelo eléctrico y análisis cuantitativo}
 
-El análisis teórico se realizó considerando \(R_1=10~k\Omega\) como resistencia serie y la asociación \(R_{23}=R_2+R_3=20~k\Omega\) como rama resistiva de la carga. La impedancia equivalente observada desde \(V_B\) es:
+La asociación en paralelo formada por \(R_3\) y el condensador presenta la impedancia:
 
 \[
-Z_p(f)=\left(\frac{1}{R_{23}}+j2\pi f C\right)^{-1}
+Z_{3C}(f)=\left(\frac{1}{R_3}+j2\pi f C\right)^{-1}
+\]
+
+Como \(R_2\) está conectada en serie con esta asociación, la impedancia total de la carga observada desde \(V_B\) es:
+
+\[
+Z_L(f)=R_2+Z_{3C}(f)
 \]
 
 La relación entre la tensión de entrada y la tensión de salida queda definida por el divisor de impedancias:
 
 \[
-H(f)=\frac{V_B}{V_A}=\frac{Z_p(f)}{R_1+Z_p(f)}
+H(f)=\frac{V_B}{V_A}=\frac{Z_L(f)}{R_1+Z_L(f)}
+\]
+
+Esta topología presenta dos límites resistivos fácilmente verificables. A baja frecuencia el condensador se comporta aproximadamente como un circuito abierto y la ganancia tiende a:
+
+\[
+\lim_{f\to 0} H(f)=
+\frac{R_2+R_3}{R_1+R_2+R_3}
+=\frac{2}{3}
+\]
+
+A frecuencia elevada el condensador reduce la contribución de \(R_3\), pero \(R_2\) permanece en el circuito. Por ello, la ganancia no tiende a cero:
+
+\[
+\lim_{f\to \infty} H(f)=
+\frac{R_2}{R_1+R_2}
+=\frac{1}{2}
 \]
 
 La frecuencia efectiva de cada captura se estimó a partir de los cruces ascendentes por el valor medio del canal de entrada. Este paso evita emplear directamente la frecuencia redondeada indicada en el nombre del archivo, ya que las frecuencias reales dependen de los divisores enteros de TIM6 y del reloj efectivo del microcontrolador. A continuación, se estimó el fasor de cada canal mediante la componente de Fourier evaluada en la frecuencia medida:
@@ -1366,17 +1390,23 @@ La frecuencia efectiva de cada captura se estimó a partir de los cruces ascende
 X(f_0)=\frac{2}{N}\sum_{n=0}^{N-1}\left(x[n]-\overline{x}\right)e^{-j2\pi f_0t_n}
 \]
 
-Con los fasores de entrada y salida se calculó \(H=V_B/V_A\). Despejando la ecuación anterior se obtuvo una estimación experimental de la impedancia:
+Con los fasores de entrada y salida se calculó \(H=V_B/V_A\). Despejando la ecuación anterior se obtuvo una estimación experimental de la impedancia total de la carga:
 
 \[
-Z_p(f)=R_1\frac{H(f)}{1-H(f)}
+Z_L(f)=R_1\frac{H(f)}{1-H(f)}
+\]
+
+Si se desea aislar la impedancia de la asociación \(R_3\parallel C\), puede restarse la resistencia serie \(R_2\):
+
+\[
+Z_{3C}(f)=Z_L(f)-R_2
 \]
 
 \begin{table}[H]
 \centering
 \begin{tabular}{r r r r r r}
 \toprule
-\(f_{med}\) (Hz) & \(|H|_{med}\) & \(|H|_{teo}\) & \(|Z|_{med}\) (\(\Omega\)) & \(|Z|_{teo}\) (\(\Omega\)) & \(\Delta\phi\) (\(^{\circ}\)) \\
+\(f_{med}\) (Hz) & \(|H|_{med}\) & \(|H|_{teo}\) & \(|Z_L|_{med}\) (\(\Omega\)) & \(|Z_L|_{teo}\) (\(\Omega\)) & \(\Delta\phi\) (\(^{\circ}\)) \\
 \midrule
 \input{figures/medidas_tabla.tex}\\
 \bottomrule
@@ -1387,9 +1417,11 @@ Z_p(f)=R_1\frac{H(f)}{1-H(f)}
 
 \input{figures/medidas_resultados_tikz.tex}
 
-Los resultados de baja frecuencia concuerdan con la topología real del montaje. Para \(0.47\) y \(4.72~Hz\), la ganancia medida es aproximadamente \(0.663\), frente a \(0.667\) en el modelo, y la impedancia estimada es de unos \(19.7~k\Omega\), frente a los \(20~k\Omega\) de la rama resistiva. Esta concordancia confirma que la discrepancia obtenida inicialmente procedía de haber situado incorrectamente \(V_B\) en el esquema y, por tanto, de haber utilizado una ecuación de divisor que no representaba el circuito medido.
+Los resultados de baja frecuencia concuerdan con la topología real del montaje. Para \(0.47\) y \(4.72~Hz\), la ganancia medida es aproximadamente \(0.663\), frente a \(0.667\) en el modelo, y la impedancia total estimada es de unos \(19.7~k\Omega\), frente a \(20~k\Omega\). A \(95\) y \(295~Hz\) también se obtiene una buena concordancia en magnitud. Entre aproximadamente \(9\) y \(47~Hz\) aparecen variaciones no monótonas que deberán comprobarse mediante nuevas capturas.
 
-Entre aproximadamente \(9\) y \(47~Hz\) se observan variaciones de ganancia que no siguen de forma monótona el modelo ideal, aunque a \(95\) y \(295~Hz\) vuelve a existir una concordancia razonable en magnitud. Por encima de este intervalo aumenta la diferencia entre el modelo con \(C=10~nF\) y las medidas. En particular, la captura de \(5.23~kHz\) presenta una ganancia de \(0.862\) y un adelanto de fase de \(21.7^\circ\), comportamiento que no es compatible con la red RC pasiva representada y que debe considerarse una medida anómala hasta repetir el ensayo. Las capturas de mayor frecuencia también muestran una atenuación y un desfase muy inferiores a los previstos para \(10~nF\), por lo que conviene verificar el valor real del condensador, las conexiones, la referencia común de las sondas y los límites de actualización y adquisición del DAC y del ADC.
+La conexión correcta del condensador explica además el comportamiento de alta frecuencia. Cuando \(C\) deriva la señal alrededor de \(R_3\), la carga no desaparece porque \(R_2\) permanece en serie. El modelo predice por ello una ganancia límite de \(0.5\). A \(41.80~kHz\) se obtiene \(|H|_{med}=0.516\), frente a \(|H|_{teo}=0.501\), y una impedancia estimada de \(9.81~k\Omega\), frente a \(10.02~k\Omega\). La magnitud medida en este punto es, por tanto, coherente con la topología corregida.
+
+Persisten discrepancias en la fase y en algunos puntos intermedios. A \(2.70~kHz\) la atenuación y el retraso son menores que los previstos, mientras que la captura de \(5.23~kHz\) presenta una ganancia de \(0.862\) y un adelanto de \(21.7^\circ\), comportamiento incompatible con la red pasiva y que debe considerarse anómalo. En las medidas de \(20.90\) y \(41.80~kHz\), el retraso experimental es también mayor que el predicho por el modelo. Estas diferencias justifican repetir los ensayos, comprobar el valor efectivo del condensador, revisar las conexiones y estudiar posibles retardos introducidos por la generación, la adquisición o la instrumentación.
 
 \subsection{Seguimiento de la planificación}
 A pesar de la curva de aprendizaje asociada al uso de Rust en sistemas embebidos, el empleo de \texttt{defmt} y \texttt{probe-rs} permitió agilizar notablemente la depuración del firmware. Frente a una estrategia basada en UART, esta solución evitó dedicar un periférico adicional exclusivamente a la depuración y redujo la cantidad de código necesario para obtener información durante la ejecución. Esto facilitó la validación incremental de los periféricos DAC, ADC, DMA y TIM6, permitiendo detectar errores de configuración de forma más rápida y mantener una implementación más ligera y centrada en el funcionamiento principal del sistema.
@@ -1406,12 +1438,12 @@ Se realizaron tres pruebas principales:
 
 \subsection{Conclusiones}
 
-Tras la finalización del presente Trabajo de Fin de Grado, se puede concluir que se han cumplido los objetivos principales de desarrollo de un prototipo embebido para generación y adquisición sincronizada de señales sobre la plataforma \textbf{STM32G474RE}. La validación con una carga conocida ha permitido comprobar la coherencia del modelo a baja frecuencia y, al mismo tiempo, identificar limitaciones experimentales que deben resolverse antes de considerar el sistema un instrumento de medida de impedancia calibrado.
+Tras la finalización del presente Trabajo de Fin de Grado, se puede concluir que se han cumplido los objetivos principales de desarrollo de un prototipo embebido para generación y adquisición sincronizada de señales sobre la plataforma \textbf{STM32G474RE}. La validación con una carga conocida ha permitido comprobar la coherencia del modelo en magnitud tanto en baja frecuencia como en el límite resistivo de alta frecuencia y, al mismo tiempo, identificar discrepancias de fase y capturas anómalas que deben resolverse antes de considerar el sistema un instrumento de medida de impedancia calibrado.
 
 A continuación, se detallan las conclusiones principales derivadas del desarrollo:
 
 \begin{itemize}
-    \item \textbf{Eficacia de la instrumentación integrada:} Las capacidades analógicas del microcontrolador han permitido implementar un demostrador funcional de generación y adquisición con un número reducido de componentes externos. Las medidas de baja frecuencia sobre la carga resistiva-capacitiva concuerdan con el modelo corregido. No obstante, la caracterización cuantitativa a frecuencias elevadas requiere repetir medidas, verificar el valor y conexión de los componentes y estudiar los límites temporales del DAC y del ADC.
+    \item \textbf{Eficacia de la instrumentación integrada:} Las capacidades analógicas del microcontrolador han permitido implementar un demostrador funcional de generación y adquisición con un número reducido de componentes externos. Las medidas de magnitud concuerdan con el modelo corregido en baja frecuencia y se aproximan al límite teórico de ganancia \(0.5\) en la frecuencia más elevada. No obstante, la caracterización cuantitativa de la fase requiere repetir medidas, verificar los componentes y estudiar los límites temporales del DAC y del ADC.
     
     \item \textbf{Robustez del ecosistema Rust:} La implementación del firmware en Rust ha aportado garantías útiles en un entorno sin sistema operativo. La gestión de periféricos de bajo nivel mediante el modelo de \textit{ownership} y el uso de herramientas como \texttt{probe-rs} han facilitado la depuración y el control del flujo de ejecución. El uso de \texttt{no\_std} ha permitido mantener un control directo sobre los recursos del sistema.
 

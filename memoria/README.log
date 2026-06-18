@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2026.6.6)  18 JUN 2026 03:53
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2026.6.6)  18 JUN 2026 04:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1092,79 +1092,82 @@ Underfull \hbox (badness 10000) in paragraph at lines 733--734
 File: montaje.jpg Graphic file (type bmp)
 <montaje.jpg>
  [26]
-Underfull \hbox (badness 10000) in paragraph at lines 1339--1340
+Underfull \hbox (badness 10000) in paragraph at lines 1341--1342
 
  []
 
 (./figures/medidas_ondas_tikz.tex [27]) [28]
-Underfull \hbox (badness 10000) in paragraph at lines 1349--1350
+Underfull \hbox (badness 10000) in paragraph at lines 1351--1352
 
  []
 
-(./figures/medidas_tabla.tex) (./figures/medidas_resultados_tikz.tex [29])
+(./figures/medidas_tabla.tex) [29] (./figures/medidas_resultados_tikz.tex)
 [30] [31] (./README.lof
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
-)
+ [32])
 \tf@lof=\write6
 \openout6 = `README.lof'.
 
- [32] (./README.bbl) [33]
+ [33] (./README.bbl) [34]
 File: ferris.png Graphic file (type bmp)
 <ferris.png>
 
-Underfull \hbox (badness 10000) in paragraph at lines 1454--1455
+Underfull \hbox (badness 10000) in paragraph at lines 1486--1487
 
  []
 
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 1458.
-[34]
-Overfull \hbox (18.40454pt too wide) in paragraph at lines 1502--1503
+nput line 1490.
+[35]
+Overfull \hbox (18.40454pt too wide) in paragraph at lines 1534--1535
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
 
-Overfull \hbox (12.65579pt too wide) in paragraph at lines 1503--1504
+Overfull \hbox (12.65579pt too wide) in paragraph at lines 1535--1536
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[35]
-Overfull \hbox (18.40453pt too wide) in paragraph at lines 1570--1571
+[36]
+Overfull \hbox (18.40453pt too wide) in paragraph at lines 1602--1603
 [][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[36] [37]
-Overfull \hbox (12.65579pt too wide) in paragraph at lines 1642--1643
+[37] [38]
+Overfull \hbox (12.65579pt too wide) in paragraph at lines 1674--1675
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[38] [39]
-Overfull \hbox (12.65579pt too wide) in paragraph at lines 1735--1736
+[39] [40]
+Overfull \hbox (12.65579pt too wide) in paragraph at lines 1767--1768
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
 ][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
  
  []
 
 
-Overfull \hbox (12.65579pt too wide) in paragraph at lines 1761--1762
+Overfull \hbox (12.65579pt too wide) in paragraph at lines 1793--1794
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[40] [41] [42] (./README.aux
+[41] [42] [43] (./README.aux
 LaTeX Info: Redefining \. on input line 22.
 LaTeX Info: Redefining \% on input line 22.
 )
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
 Package rerunfilecheck Info: File `README.out' has not changed.
 (rerunfilecheck)             Checksum: 58BF5938E05CCCAB540106C4123B9BB1;11932.
  ) 
 Here is how much of TeX's memory you used:
- 28882 strings out of 476689
- 575467 string characters out of 5806614
- 1934018 words of memory out of 6000000
- 48630 multiletter control sequences out of 15000+600000
+ 28884 strings out of 476689
+ 575503 string characters out of 5806614
+ 1933018 words of memory out of 6000000
+ 48632 multiletter control sequences out of 15000+600000
  517979 words of font info for 72 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  99i,10n,94p,2795b,1920s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on README.pdf (42 pages).
+Output written on README.pdf (43 pages).

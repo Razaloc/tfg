@@ -5,9 +5,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$seriesResistance = 10000.0
-$parallelResistance = 20000.0
-$parallelCapacitance = 10e-9
+# Topologia: VA -- R1 -- VB -- R2 -- (R3 || C) -- masa
+$r1 = 10000.0
+$r2 = 10000.0
+$r3 = 10000.0
+$capacitance = 10e-9
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
@@ -441,12 +443,13 @@ foreach ($file in Get-ChildItem -Path $InputDir -Filter "MedidaZ1_*Hz.csv" | Sor
 
     $h = Divide-Complex $phasorOut.Real $phasorOut.Imag $phasorIn.Real $phasorIn.Imag
     $oneMinusH = Sub-Complex 1.0 0.0 $h.Re $h.Im
-    $zMeasured = Divide-Complex ($seriesResistance * $h.Re) ($seriesResistance * $h.Im) $oneMinusH.Re $oneMinusH.Im
+    $zMeasured = Divide-Complex ($r1 * $h.Re) ($r1 * $h.Im) $oneMinusH.Re $oneMinusH.Im
 
     $omega = 2.0 * [Math]::PI * $frequency
-    $yTheoretical = [pscustomobject]@{ Re = 1.0 / $parallelResistance; Im = $omega * $parallelCapacitance }
-    $zTheoretical = Divide-Complex 1.0 0.0 $yTheoretical.Re $yTheoretical.Im
-    $hTheoretical = Divide-Complex $zTheoretical.Re $zTheoretical.Im ($seriesResistance + $zTheoretical.Re) $zTheoretical.Im
+    $yParallelTheoretical = [pscustomobject]@{ Re = 1.0 / $r3; Im = $omega * $capacitance }
+    $zParallelTheoretical = Divide-Complex 1.0 0.0 $yParallelTheoretical.Re $yParallelTheoretical.Im
+    $zTheoretical = Add-Complex $r2 0.0 $zParallelTheoretical.Re $zParallelTheoretical.Im
+    $hTheoretical = Divide-Complex $zTheoretical.Re $zTheoretical.Im ($r1 + $zTheoretical.Re) $zTheoretical.Im
 
     $phaseDeg = (($phasorOut.Phase - $phasorIn.Phase) * 180.0 / [Math]::PI)
     while ($phaseDeg -gt 180.0) { $phaseDeg -= 360.0 }
@@ -475,6 +478,9 @@ foreach ($file in Get-ChildItem -Path $InputDir -Filter "MedidaZ1_*Hz.csv" | Sor
         ZTheoreticalAbs = (Get-Mag $zTheoretical.Re $zTheoretical.Im)
         ZTheoreticalRe = $zTheoretical.Re
         ZTheoreticalIm = $zTheoretical.Im
+        ZParallelTheoreticalAbs = (Get-Mag $zParallelTheoretical.Re $zParallelTheoretical.Im)
+        ZParallelTheoreticalRe = $zParallelTheoretical.Re
+        ZParallelTheoreticalIm = $zParallelTheoretical.Im
     })
 }
 
@@ -484,13 +490,13 @@ $ordered | Export-Csv -NoTypeInformation -Encoding UTF8 -Path (Join-Path $Output
 Write-WaveformCasesTikz (Join-Path $OutputDir "medidas_ondas_tikz.tex") $orderedWaveformCases
 
 Write-LinePlotSvg (Join-Path $OutputDir "medidas_ganancia.svg") $ordered "Respuesta en amplitud del circuito de prueba" "Frecuencia (Hz)" "|Vout/Vin|" "Medida por Fourier" "Modelo teorico" "Frequency" "GainMeasured" "GainTheoretical" -LogX
-Write-LinePlotSvg (Join-Path $OutputDir "medidas_impedancia.svg") $ordered "Impedancia equivalente de la rama R || C" "Frecuencia (Hz)" "|Z| (ohm)" "Estimada desde medidas" "Modelo teorico" "Frequency" "ZMeasuredAbs" "ZTheoreticalAbs" -LogX
+Write-LinePlotSvg (Join-Path $OutputDir "medidas_impedancia.svg") $ordered "Impedancia equivalente de la carga vista desde Vb" "Frecuencia (Hz)" "|Z| (ohm)" "Estimada desde medidas" "Modelo teorico" "Frequency" "ZMeasuredAbs" "ZTheoreticalAbs" -LogX
 Write-LinePlotSvg (Join-Path $OutputDir "medidas_fase.svg") $ordered "Desfase de la salida respecto a la entrada" "Frecuencia (Hz)" "Fase (grados)" "Medida por Fourier" "Modelo teorico" "Frequency" "PhaseMeasuredDeg" "PhaseTheoreticalDeg" -LogX
 
 $tikzPath = Join-Path $OutputDir "medidas_resultados_tikz.tex"
 Set-Content -Path $tikzPath -Value "% Figuras generadas automaticamente por scripts/analyze_medidas.ps1" -Encoding ASCII
 Write-TikzPlotTex $tikzPath $ordered "Ganancia de salida obtenida mediante Fourier" "\(|V_B/V_A|\)" "Medida" "Modelo" "GainMeasured" "GainTheoretical"
-Write-TikzPlotTex $tikzPath $ordered "Modulo de impedancia equivalente" "\(|Z|~(\Omega)\)" "Estimada" "Modelo" "ZMeasuredAbs" "ZTheoreticalAbs"
+Write-TikzPlotTex $tikzPath $ordered "Modulo de la carga vista desde \(V_B\)" "\(|Z_L|~(\Omega)\)" "Estimada" "Modelo" "ZMeasuredAbs" "ZTheoreticalAbs"
 Write-TikzPlotTex $tikzPath $ordered "Desfase de salida respecto a entrada" "\(\Delta\phi~(^{\circ})\)" "Medida" "Modelo" "PhaseMeasuredDeg" "PhaseTheoreticalDeg"
 
 $tableRows = New-Object System.Collections.Generic.List[string]

@@ -73,14 +73,14 @@
 \contentsline {paragraph}{Modelo eléctrico y análisis cuantitativo}{29}{section*.37}%
 \contentsline {subsection}{\numberline {4.4}Seguimiento de la planificación}{31}{subsection.4.4}%
 \contentsline {subsection}{\numberline {4.5}Plan de pruebas}{31}{subsection.4.5}%
-\contentsline {section}{\numberline {5}Cierre del documento}{31}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Conclusiones}{31}{subsection.5.1}%
+\contentsline {section}{\numberline {5}Cierre del documento}{32}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Conclusiones}{32}{subsection.5.1}%
 \contentsline {subsection}{\numberline {5.2}Galería de figuras}{32}{subsection.5.2}%
-\contentsline {section}{Bibliografía}{33}{section*.38}%
-\contentsline {section}{\numberline {A}Anexos}{34}{appendix.Alph1}%
-\contentsline {subsection}{\numberline {A.1}Implementación del Firmware en Rust}{34}{subsection.Alph1.1}%
-\contentsline {subsection}{\numberline {A.2}Configuración de Periféricos y Bucle Principal}{34}{subsection.Alph1.2}%
-\contentsline {paragraph}{Inicialización del sistema}{34}{section*.40}%
-\contentsline {subsection}{\numberline {A.3}Gestión de perfiles de frecuencia y pulsador de usuario}{41}{subsection.Alph1.3}%
-\contentsline {subsection}{\numberline {A.4}Detalles de la Síntesis Digital Directa (DDS)}{41}{subsection.Alph1.4}%
-\contentsline {subsection}{\numberline {A.5}Uso de inteligencia artificial generativa}{41}{subsection.Alph1.5}%
+\contentsline {section}{Bibliografía}{34}{section*.38}%
+\contentsline {section}{\numberline {A}Anexos}{35}{appendix.Alph1}%
+\contentsline {subsection}{\numberline {A.1}Implementación del Firmware en Rust}{35}{subsection.Alph1.1}%
+\contentsline {subsection}{\numberline {A.2}Configuración de Periféricos y Bucle Principal}{35}{subsection.Alph1.2}%
+\contentsline {paragraph}{Inicialización del sistema}{35}{section*.40}%
+\contentsline {subsection}{\numberline {A.3}Gestión de perfiles de frecuencia y pulsador de usuario}{42}{subsection.Alph1.3}%
+\contentsline {subsection}{\numberline {A.4}Detalles de la Síntesis Digital Directa (DDS)}{42}{subsection.Alph1.4}%
+\contentsline {subsection}{\numberline {A.5}Uso de inteligencia artificial generativa}{42}{subsection.Alph1.5}%
