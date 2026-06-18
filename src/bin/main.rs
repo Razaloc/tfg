@@ -45,18 +45,18 @@ const TABLA_SENO: [u16; N_MUESTRAS] = [
     3185, 2831, 2447, 2048, 1649, 1265, 911, 601, 346, 157, 40, 0, 40, 157, 346,
     601, 911, 1265, 1649,
 ];
-
+// Frecuencias redondeadas a partir de las lecturas del osciloscopio.
 const PERFILES: [PerfilFrecuencia; 10] = [
-    PerfilFrecuencia { frecuencia_hz: 5,   psc: 169, arr: 624, },
-    PerfilFrecuencia { frecuencia_hz: 10,  psc: 169, arr: 312, },
-    PerfilFrecuencia { frecuencia_hz: 25,  psc: 169, arr: 124, },
-    PerfilFrecuencia { frecuencia_hz: 50,  psc: 169, arr: 62, },
-    PerfilFrecuencia { frecuencia_hz: 100, psc: 169, arr: 30, },
-    PerfilFrecuencia { frecuencia_hz: 300, psc: 169, arr: 9, },
-    PerfilFrecuencia { frecuencia_hz: 1000, psc: 5, arr: 30, },
-    PerfilFrecuencia { frecuencia_hz: 5000, psc: 5, arr: 15, },
-    PerfilFrecuencia { frecuencia_hz: 10000, psc: 5, arr: 3, },
-    PerfilFrecuencia { frecuencia_hz: 30000, psc: 5, arr: 1, },
+    PerfilFrecuencia { frecuencia_hz: 5,     psc: 169, arr: 624, },
+    PerfilFrecuencia { frecuencia_hz: 9,     psc: 169, arr: 312, },
+    PerfilFrecuencia { frecuencia_hz: 24,    psc: 169, arr: 124, },
+    PerfilFrecuencia { frecuencia_hz: 47,    psc: 169, arr: 62, },
+    PerfilFrecuencia { frecuencia_hz: 95,    psc: 169, arr: 30, },
+    PerfilFrecuencia { frecuencia_hz: 295,   psc: 169, arr: 9, },
+    PerfilFrecuencia { frecuencia_hz: 2697,  psc: 5, arr: 30, },
+    PerfilFrecuencia { frecuencia_hz: 5225,  psc: 5, arr: 15, },
+    PerfilFrecuencia { frecuencia_hz: 20896, psc: 5, arr: 3, },
+    PerfilFrecuencia { frecuencia_hz: 41798, psc: 5, arr: 1, },
 ];
 
 fn habilitar_relojes(rcc: &stm32g474::RCC) {
