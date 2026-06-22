@@ -149,5 +149,3 @@ probe-rs attach --defmt
 MIT — libre uso para proyectos educativos, biomédicos o experimentales.
 
 ---
-
-Si deseas ampliar el README con gráficos, diagramas fancier, instrucciones para hardware o documentación interna del código, puedo generarlos.
